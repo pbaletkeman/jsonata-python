@@ -1,0 +1,25 @@
+[build-system]
+requires = [
+    "setuptools>=61.0",
+    "Cython>=3.0.0",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jsonata"
+version = "0.1.0"
+description = "Cython constants module for jsonata"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = []
+
+[tool.setuptools]
+packages = ["jsonata.cython.constants"]
+package-dir = { "" = "pyx" }
+ext-modules = [
+    { name = "jsonata.cython.constants.Constants", sources = ["pyx/jsonata/cython/constants/Constants.pyx"] }
+]
+
+[tool.cython]
+language_level = "3"
