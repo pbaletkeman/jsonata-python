@@ -33,6 +33,8 @@ import math
 import re
 from libc.math cimport fmod
 from cpython cimport bool as cbool
+from jsonata import jexception
+from jsonata import jexception, utils
 
 # Replace dataclasses with regular class for performance
 cdef class Token:
@@ -92,7 +94,7 @@ cdef class Tokenizer:
         return False
 
     cpdef object scan_regex(self):
-        from jsonata import jexception
+        
         cdef int start = self.position
         cdef str current_char
         cdef str pattern = ""
@@ -134,7 +136,7 @@ cdef class Tokenizer:
         raise jexception.JException("S0302", self.position)
 
     cpdef object next(self, bint prefix):
-        from jsonata import jexception, utils
+        
         cdef str current_char
         cdef str quote_type
         cdef str qstr
