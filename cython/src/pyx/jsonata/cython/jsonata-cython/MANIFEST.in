@@ -1,0 +1,13 @@
+# Include all Cython source files
+recursive-include src/jsonata-cython *.pyx
+
+# Include any generated C/C++ source files (in case users don't have Cython)
+recursive-include src/jsonata-cython *.c
+recursive-include src/jsonata-cython *.cpp
+
+# Include headers if you add them later
+recursive-include src/jsonata-cython *.pxd
+
+# Include standard files
+include LICENSE
+include README.md
