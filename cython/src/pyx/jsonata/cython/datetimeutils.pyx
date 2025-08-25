@@ -43,8 +43,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Sequence, Tuple
 
-from jsonata import constants
-from jsonata import functions
+from jsonata import constants, functions
 
 @cython.cfunc
 @cython.locals(decimal=int, maxv=int, value=int, i=int, ch=str)

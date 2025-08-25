@@ -34,8 +34,7 @@
 import re
 from typing import Optional, Sequence, Any
 
-from jsonata import jexception, utils
-from jsonata import functions
+from jsonata import jexception, utils, functions
 
 cdef class Param:
     cdef str type

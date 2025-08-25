@@ -33,7 +33,6 @@ import math
 import re
 from libc.math cimport fmod
 from cpython cimport bool as cbool
-from jsonata import jexception
 from jsonata import jexception, utils
 
 # Replace dataclasses with regular class for performance
