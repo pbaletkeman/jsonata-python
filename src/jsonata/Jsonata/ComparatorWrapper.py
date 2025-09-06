@@ -1,10 +1,10 @@
 from typing import Optional
 
-from ..JException import JException
-from .Frame import Frame
-from ..Jsonata import Jsonata
-from ..Parser.Parser import Parser
-from ..Parser.Symbol import Symbol
+from src.jsonata.JException.JException import JException
+from src.jsonata.Jsonata.Frame import Frame
+from src.jsonata.Jsonata.Jsonata import Jsonata
+from src.jsonata.Parser.Parser import Parser
+from src.jsonata.Parser.Symbol import Symbol
 
 
 class ComparatorWrapper:

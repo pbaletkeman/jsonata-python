@@ -1,8 +1,11 @@
 from __future__ import annotations
 from typing import Any, Optional, Sequence
 
-from .JFunctionCallable import JFunctionCallable
-from .JFunctionSignatureValidation import JFunctionSignatureValidation
+
+from src.jsonata.Jsonata.JFunctionCallable import JFunctionCallable
+from src.jsonata.Jsonata.JFunctionSignatureValidation import (
+    JFunctionSignatureValidation,
+)
 
 
 class JFunction(JFunctionCallable, JFunctionSignatureValidation):

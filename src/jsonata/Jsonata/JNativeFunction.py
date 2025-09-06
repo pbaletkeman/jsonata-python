@@ -1,8 +1,8 @@
 import inspect
 from typing import Any, Optional, Sequence, Type
-from ..Functions.Functions import Functions
-from .JFunction import JFunction
-from ..Signature.Signature import Signature
+from src.jsonata.Functions.Functions import Functions
+from src.jsonata.Jsonata.JFunction import JFunction
+from src.jsonata.Signature.Signature import Signature
 
 
 class JNativeFunction(JFunction):

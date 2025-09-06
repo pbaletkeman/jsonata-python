@@ -30,6 +30,7 @@ import math
 import re
 import sys
 import threading
+
 from dataclasses import dataclass
 from typing import (
     Any,
@@ -42,25 +43,19 @@ from typing import (
     MutableMapping,
 )
 
-from .GroupEntry import GroupEntry
-from .ComparatorWrapper import ComparatorWrapper
-
-from Transformer import Transformer
-
-from .JNativeFunction import JNativeFunction
-
-from ..Parser import Symbol
-
-from ..JException import JException
-from ..Timebox.Timebox import Timebox
-from ..Utils.Utils import Utils
-from ..Functions import Functions
-from .Frame import Frame
-from .JFunction import JFunction
-from ..Parser import Parser
-from ..Signature.Signature import Signature as sig
-from ..Functions.Functions import Functions
-from ..Parser.Symbol import Symbol
+from src.jsonata.Jsonata.GroupEntry import GroupEntry
+from src.jsonata.Jsonata.ComparatorWrapper import ComparatorWrapper
+from src.jsonata.Jsonata.Transformer import Transformer
+from src.jsonata.Jsonata.JNativeFunction import JNativeFunction
+from src.jsonata.Parser.Symbol import Symbol
+from src.jsonata.JException.JException import JException
+from src.jsonata.Timebox.Timebox import Timebox
+from src.jsonata.Utils.Utils import Utils
+from src.jsonata.Functions.Functions import Functions
+from src.jsonata.Jsonata.Frame import Frame
+from src.jsonata.Jsonata.JFunction import JFunction
+from src.jsonata.Parser.Parser import Parser
+from src.jsonata.Signature.Signature import Signature as sig
 
 
 #
@@ -78,20 +73,19 @@ class Jsonata:
     #
     # JFunction definition class
     #
-
-    #
-    # Evaluate expression against input_item data
-    # @param {Object} expr - JSONata expression
-    # @param {Object} input_item - input_item data to evaluate against
-    # @param {Object} environment - Environment
-    # @returns {*} Evaluated input_item data
-    #
     def eval(
         self,
         expr: Optional[Symbol],
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Evaluate expression against input_item data
+        @param expr: JSONata expression
+        @param input_item: input_item data to evaluate against
+        @param environment: Environment
+        @returns: Evaluated input_item data
+        """
         # Thread safety:
         # Make sure each evaluate is executed on an instance per thread
         return self.get_per_thread_instance()._eval(expr, input_item, environment)
@@ -194,19 +188,19 @@ class Jsonata:
         return result
 
     #
-    # Evaluate path expression against input_item data
-    # @param {Object} expr - JSONata expression
-    # @param {Object} input_item - input_item data to evaluate against
-    # @param {Object} environment - Environment
-    # @returns {*} Evaluated input_item data
-    #
-    # async
     def evaluate_path(
         self,
         expr: Optional[Symbol],
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Evaluate path expression against input_item data
+        @param expr: JSONata expression
+        @param input_item: input_item data to evaluate against
+        @param environment: Environment
+        @returns: Evaluated input_item data
+        """
         input_sequence = None
         # expr is an array of steps
         # if the first step is a variable reference ($...), including root reference ($$),
@@ -288,15 +282,6 @@ class Jsonata:
                 frame.bind(prop, val)
         return frame
 
-    #
-    # Evaluate a step within a path
-    # @param {Object} expr - JSONata expression
-    # @param {Object} input - Input data to evaluate against
-    # @param {Object} environment - Environment
-    # @param {boolean} lastStep - flag the last step in a path
-    # @returns {*} Evaluated input data
-    #
-    # async
     def evaluate_step(
         self,
         expr: Symbol,
@@ -304,6 +289,14 @@ class Jsonata:
         environment: Optional[Frame],
         last_step: bool,
     ) -> Optional[Any]:
+        """
+        Evaluate a step within a path
+        @param expr: JSONata expression
+        @param input: Input data to evaluate against
+        @param environment: Environment
+        @param last_step: flag the last step in a path
+        @returns: Evaluated input data
+        """
         if expr.type == "sort":
             result = self.evaluate_sort_expression(expr, input, environment)
             if expr.stages is not None:
@@ -358,15 +351,6 @@ class Jsonata:
                     tuple[str(stage.value)] = ee
         return result
 
-    #
-    # Evaluate a step within a path
-    # @param {Object} expr - JSONata expression
-    # @param {Object} input - Input data to evaluate against
-    # @param {Object} tupleBindings - The tuple stream
-    # @param {Object} environment - Environment
-    # @returns {*} Evaluated input data
-    #
-    # async
     def evaluate_tuple_step(
         self,
         expr: Symbol,
@@ -374,6 +358,14 @@ class Jsonata:
         tuple_bindings: Optional[Sequence[Mapping[str, Any]]],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Evaluate a step within a path (tuple stream)
+        @param expr: JSONata expression
+        @param input_item: Input data to evaluate against
+        @param tuple_bindings: The tuple stream
+        @param environment: Environment
+        @returns: Evaluated input data
+        """
         result = None
         if expr.type == "sort":
             if tuple_bindings is not None:

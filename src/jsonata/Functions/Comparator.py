@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 from src.jsonata.Jsonata import JLambda
 from src.jsonata.Functions.Functions import Functions
-from src.jsonata.Jsonata import Jsonata
+from src.jsonata.Jsonata.JLambda import JLambda
 
 
 class Comparator:

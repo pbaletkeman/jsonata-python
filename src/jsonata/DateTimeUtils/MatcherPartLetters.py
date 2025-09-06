@@ -29,7 +29,7 @@
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
 
-from .MatcherPart import MatcherPart
+from src.jsonata.DateTimeUtils.MatcherPart import MatcherPart
 
 
 class MatcherPartLetters(MatcherPart):
