@@ -6,8 +6,10 @@ class JList(list):
     cons: bool
 
     def __init__(self, c=()):
+        """
+        Initialize JList and set Jsonata specific flags.
+        """
         super().__init__(c)
-        # Jsonata specific flags
         self.sequence = False
         self.outer_wrapper = False
         self.tuple_stream = False

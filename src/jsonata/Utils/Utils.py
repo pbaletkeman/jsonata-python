@@ -34,6 +34,9 @@ class Utils:
 
     @staticmethod
     def is_numeric(v: Optional[Any]) -> bool:
+        """
+        Returns True if v is a numeric type (int or float and not NaN or infinite), False otherwise.
+        """
         if isinstance(v, bool):
             return False
         if isinstance(v, int):

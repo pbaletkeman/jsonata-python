@@ -424,20 +424,19 @@ class Jsonata:
 
         return result
 
-    #
-    # Apply filter predicate to input data
-    # @param {Object} predicate - filter expression
-    # @param {Object} input - Input data to apply predicates against
-    # @param {Object} environment - Environment
-    # @returns {*} Result after applying predicates
-    #
-    # async
     def evaluate_filter(
         self,
         predicate: Optional[Any],
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Any:
+        """
+        Apply filter predicate to input data
+        @param predicate: filter expression
+        @param input_item: Input data to apply predicates against
+        @param environment: Environment
+        @returns: Result after applying predicates
+        """
         results = Utils.create_sequence()
         if isinstance(input_item, Utils.JList) and input_item.tuple_stream:
             results.tuple_stream = True

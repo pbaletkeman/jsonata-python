@@ -96,6 +96,9 @@ class Tokenizer:
     length: int
 
     def __init__(self, path):
+        """
+        Tokenizer (lexer) - invoked by the parser to return one token at a time.
+        """
         self.position = 0
         self.depth = 0
 
