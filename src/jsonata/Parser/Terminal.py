@@ -1,5 +1,5 @@
-from .Parser import Parser
-from .Symbol import Symbol
+from src.jsonata.Parser.Parser import Parser
+from src.jsonata.Parser.Symbol import Symbol
 
 
 class Terminal(Symbol):

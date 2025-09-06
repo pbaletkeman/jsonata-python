@@ -29,8 +29,8 @@
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
 
-from .MatcherPart import MatcherPart
-from .SpecPart import SpecPart
+from src.jsonata.DateTimeUtils.MatcherPart import MatcherPart
+from src.jsonata.DateTimeUtils.SpecPart import SpecPart
 
 
 class MatcherPartTimeZone(MatcherPart):

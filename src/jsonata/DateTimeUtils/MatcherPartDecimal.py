@@ -29,8 +29,8 @@
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
 
-from .Format import Format
-from .MatcherPart import MatcherPart
+from src.jsonata.DateTimeUtils.Format import Format
+from src.jsonata.DateTimeUtils.MatcherPart import MatcherPart
 
 
 class MatcherPartDecimal(MatcherPart):

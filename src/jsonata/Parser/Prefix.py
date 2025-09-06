@@ -1,6 +1,6 @@
 # match prefix operators
 # <operator> <expression>
-from .Symbol import Symbol
+from src.jsonata.Parser.Symbol import Symbol
 
 
 class Prefix(Symbol):

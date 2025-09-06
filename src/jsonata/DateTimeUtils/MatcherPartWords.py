@@ -34,10 +34,7 @@ from .MatcherPart import MatcherPart
 
 class MatcherPartWords(MatcherPart):
 
-    def __init__(self, regex):
-        super().__init__(regex)
-
     def parse(self, value: str) -> int:
-        from . import words_to_number
+        from src.jsonata.DateTimeUtils.DateTimeUtils import DateTimeUtils
 
-        return words_to_number(value.casefold())
+        return DateTimeUtils.words_to_number(value.casefold())

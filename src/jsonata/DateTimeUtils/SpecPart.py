@@ -31,8 +31,8 @@
 
 from typing import Optional
 
-from .TCase import TCase
-from .Format import Format
+from src.jsonata.DateTimeUtils.TCase import TCase
+from src.jsonata.DateTimeUtils.Format import Format
 
 
 class SpecPart:

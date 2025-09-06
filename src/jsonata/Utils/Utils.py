@@ -23,9 +23,9 @@
 import math
 from typing import Any, MutableMapping, MutableSequence, Optional, Iterable
 
-from ..JException.JException import JException
-from .NullValue import NullValue
-from ..Jsonata.JFunctionCallable import JFunctionCallable
+from src.jsonata.JException.JException import JException
+from src.jsonata.Utils.NullValue import NullValue
+from src.jsonata.Jsonata.JFunctionCallable import JFunctionCallable
 
 
 class Utils:

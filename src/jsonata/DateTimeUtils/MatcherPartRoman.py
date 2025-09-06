@@ -40,6 +40,8 @@ class MatcherPartRoman(MatcherPart):
         self._is_upper = is_upper
 
     def parse(self, value: str) -> int:
-        from . import roman_to_decimal
+        from src.jsonata.DateTimeUtils.DateTimeUtils import DateTimeUtils
 
-        return roman_to_decimal(value if self._is_upper else value.upper())
+        return DateTimeUtils.roman_to_decimal(
+            value if self._is_upper else value.upper()
+        )

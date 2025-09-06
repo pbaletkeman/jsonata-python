@@ -32,10 +32,10 @@
 import re
 from typing import MutableSequence, Optional, Sequence, NoReturn, Any
 
-from ..JException import JException
-from ..Utils.Utils import Utils
-from ..Functions import Functions
-from . import Param
+from src.jsonata.JException.JException import JException
+from src.jsonata.Utils.Utils import Utils
+from src.jsonata.Functions import Functions
+from src.jsonata.Signature import Param
 
 
 #

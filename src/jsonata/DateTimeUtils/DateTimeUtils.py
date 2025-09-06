@@ -28,25 +28,31 @@
 #   +1 914 499 1900
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
-
 import datetime
 import functools
+import logging
 import math
 import re
 from collections import deque
-from dataclasses import dataclass
-from enum import Enum
 from typing import Optional, Sequence
 
-from ..Constants import Constants
-from .Format import Format
-from .GroupingSeparator import GroupingSeparator
-from .MatcherPart import MatcherPart
-from .PictureFormat import PictureFormat
-from .SpecPart import SpecPart
-from .RomanNumeral import RomanNumeral
-from .YearMonth import YearMonth
-from ..Functions import Functions
+from src.jsonata.DateTimeUtils.TCase import TCase
+from src.jsonata.DateTimeUtils.MatcherPartTimeZone import MatcherPartTimeZone
+from src.jsonata.DateTimeUtils.MatcherPartLookup import MatcherPartLookup
+from src.jsonata.DateTimeUtils.MatcherPartLetters import MatcherPartLetters
+from src.jsonata.DateTimeUtils.MatcherPartRoman import MatcherPartRoman
+from src.jsonata.DateTimeUtils.MatcherPartDecimal import MatcherPartDecimal
+from src.jsonata.DateTimeUtils.Formats import Formats
+
+from src.jsonata.DateTimeUtils.PictureMatcher import PictureMatcher
+from src.jsonata.Constants.Constants import Constants
+from src.jsonata.DateTimeUtils.GroupingSeparator import GroupingSeparator
+from src.jsonata.DateTimeUtils.MatcherPart import MatcherPart
+from src.jsonata.DateTimeUtils.PictureFormat import PictureFormat
+from src.jsonata.DateTimeUtils.SpecPart import SpecPart
+from src.jsonata.DateTimeUtils.RomanNumeral import RomanNumeral
+from src.jsonata.DateTimeUtils.YearMonth import YearMonth
+from src.jsonata.Functions.Functions import Functions
 
 
 class DateTimeUtils:
@@ -287,16 +293,16 @@ class DateTimeUtils:
 
     @staticmethod
     def roman_to_decimal(roman: str) -> int:
-        decimal = 0
-        max = 1
-        for i, digit in enumerate(reversed(roman)):
+        decimal_val = 0
+        max_val = 1
+        for digit in reversed(roman):
             value = DateTimeUtils._roman_values[digit]
-            if value < max:
-                decimal -= value
+            if value < max_val:
+                decimal_val -= value
             else:
-                max = value
-                decimal += value
-        return decimal
+                max_val = value
+                decimal_val += value
+        return decimal_val
 
     @staticmethod
     def _decimal_to_letters(value: int, a_char: str) -> str:
@@ -309,8 +315,8 @@ class DateTimeUtils:
 
     @staticmethod
     def format_integer(value: int, picture: Optional[str]) -> str:
-        format = DateTimeUtils._analyse_integer_picture(picture)
-        return DateTimeUtils._format_integer(value, format)
+        fmt = DateTimeUtils._analyse_integer_picture(picture)
+        return DateTimeUtils._format_integer(value, fmt)
 
     @staticmethod
     def parse_integer(value: Optional[str], picture: Optional[str]) -> Optional[int]:
@@ -331,26 +337,25 @@ class DateTimeUtils:
 
     @staticmethod
     def _format_integer(value: int, format: Optional[Format]) -> str:
-
         formatted_integer = ""
         negative = value < 0
         value = abs(value)
-        if format.primary == DateTimeUtils.Formats.LETTERS:
+        if format.primary == Formats.LETTERS:
             formatted_integer = DateTimeUtils._decimal_to_letters(
                 int(value),
-                "A" if format.case_type == DateTimeUtils.TCase.UPPER else "a",
+                "A" if format.case_type == TCase.UPPER else "a",
             )
-        elif format.primary == DateTimeUtils.Formats.ROMAN:
+        elif format.primary == Formats.ROMAN:
             formatted_integer = DateTimeUtils._decimal_to_roman(int(value))
-            if format.case_type == DateTimeUtils.TCase.UPPER:
+            if format.case_type == TCase.UPPER:
                 formatted_integer = formatted_integer.upper()
-        elif format.primary == DateTimeUtils.Formats.WORDS:
+        elif format.primary == Formats.WORDS:
             formatted_integer = DateTimeUtils.number_to_words(value, format.ordinal)
-            if format.case_type == DateTimeUtils.TCase.UPPER:
+            if format.case_type == TCase.UPPER:
                 formatted_integer = formatted_integer.upper()
-            elif format.case_type == DateTimeUtils.TCase.LOWER:
+            elif format.case_type == TCase.LOWER:
                 formatted_integer = formatted_integer.casefold()
-        elif format.primary == DateTimeUtils.Formats.DECIMAL:
+        elif format.primary == Formats.DECIMAL:
             formatted_integer = str(value)
             pad_length = format.mandatoryDigits - len(formatted_integer)
             if pad_length > 0:
@@ -397,7 +402,7 @@ class DateTimeUtils:
                 ):
                     suffix = "th"
                 formatted_integer += suffix
-        elif format.primary == DateTimeUtils.Formats.SEQUENCE:
+        elif format.primary == Formats.SEQUENCE:
             raise RuntimeError(
                 Constants.ERR_MSG_SEQUENCE_UNSUPPORTED.format(format.token)
             )
@@ -448,7 +453,7 @@ class DateTimeUtils:
 
     @staticmethod
     def _analyse_integer_picture(picture: Optional[str]) -> Format:
-        format = DateTimeUtils.Format()
+        format = Format()
         primary_format = None
         format_modifier = None
         semicolon = picture.rfind(";")
@@ -461,23 +466,23 @@ class DateTimeUtils:
                 format.ordinal = True
 
         if primary_format == "A":
-            format.case_type = DateTimeUtils.TCase.UPPER
-            format.primary = DateTimeUtils.Formats.LETTERS
+            format.case_type = TCase.UPPER
+            format.primary = Formats.LETTERS
         elif primary_format == "a":
-            format.primary = DateTimeUtils.Formats.LETTERS
+            format.primary = Formats.LETTERS
         elif primary_format == "I":
-            format.case_type = DateTimeUtils.TCase.UPPER
-            format.primary = DateTimeUtils.Formats.ROMAN
+            format.case_type = TCase.UPPER
+            format.primary = Formats.ROMAN
         elif primary_format == "i":
-            format.primary = DateTimeUtils.Formats.ROMAN
+            format.primary = Formats.ROMAN
         elif primary_format == "W":
-            format.case_type = DateTimeUtils.TCase.UPPER
-            format.primary = DateTimeUtils.Formats.WORDS
+            format.case_type = TCase.UPPER
+            format.primary = Formats.WORDS
         elif primary_format == "Ww":
-            format.case_type = DateTimeUtils.TCase.TITLE
-            format.primary = DateTimeUtils.Formats.WORDS
+            format.case_type = TCase.TITLE
+            format.primary = Formats.WORDS
         elif primary_format == "w":
-            format.primary = DateTimeUtils.Formats.WORDS
+            format.primary = Formats.WORDS
         else:
             zero_code = None
             mandatory_digits = 0
@@ -510,7 +515,7 @@ class DateTimeUtils:
                             GroupingSeparator(separator_position, code_point)
                         )
             if mandatory_digits > 0:
-                format.primary = DateTimeUtils.Formats.DECIMAL
+                format.primary = Formats.DECIMAL
                 format.zeroCode = zero_code
                 format.mandatoryDigits = mandatory_digits
                 format.optionalDigits = optional_digits
@@ -519,15 +524,13 @@ class DateTimeUtils:
                 if regular > 0:
                     format.regular = True
                     format.groupingSeparators.append(
-                        DateTimeUtils.GroupingSeparator(
-                            regular, grouping_separators[0].character
-                        )
+                        GroupingSeparator(regular, grouping_separators[0].character)
                     )
                 else:
                     format.regular = False
                     format.groupingSeparators = grouping_separators
             else:
-                format.primary = DateTimeUtils.Formats.SEQUENCE
+                format.primary = Formats.SEQUENCE
                 format.token = primary_format
 
         return format
@@ -580,7 +583,7 @@ class DateTimeUtils:
 
     @staticmethod
     def _analyse_datetime_picture(picture: str) -> PictureFormat:
-        format = DateTimeUtils.PictureFormat("datetime")
+        format = PictureFormat("datetime")
         start = 0
         pos = 0
         while pos < len(picture):
@@ -589,7 +592,7 @@ class DateTimeUtils:
                 if picture[pos + 1] == "[":
                     # literal [
                     format.add_literal(picture, start, pos)
-                    format.parts.append(DateTimeUtils.SpecPart("literal", value="["))
+                    format.parts.append(SpecPart("literal", value="["))
                     pos += 2
                     start = pos
                     continue
@@ -597,10 +600,10 @@ class DateTimeUtils:
                 start = pos
                 pos = picture.find("]", start)
                 if pos == -1:
-                    raise RuntimeError(constants.Constants.ERR_MSG_NO_CLOSING_BRACKET)
+                    raise RuntimeError(Constants.ERR_MSG_NO_CLOSING_BRACKET)
                 marker = picture[start + 1 : pos]
                 marker = "".join(re.split("\\s+", marker))
-                def_ = DateTimeUtils.SpecPart("marker", component=marker[0])
+                def_ = SpecPart("marker", component=marker[0])
                 comma = marker.rfind(",")
                 pres_mod = None
                 if comma != -1:
@@ -642,12 +645,12 @@ class DateTimeUtils:
                         )
                     )
                 if def_.presentation1[0] == "n":
-                    def_.names = DateTimeUtils.TCase.LOWER
+                    def_.names = TCase.LOWER
                 elif def_.presentation1[0] == "N":
                     if len(def_.presentation1) > 1 and def_.presentation1[1] == "n":
-                        def_.names = DateTimeUtils.TCase.TITLE
+                        def_.names = TCase.TITLE
                     else:
-                        def_.names = DateTimeUtils.TCase.UPPER
+                        def_.names = TCase.UPPER
                 elif "YMDdFWwXxHhmsf".find(def_.component) != -1:
                     integer_pattern = def_.presentation1
                     if def_.presentation2 is not None:
@@ -790,9 +793,9 @@ class DateTimeUtils:
                             marker_spec.component
                         )
                     )
-                if marker_spec.names == DateTimeUtils.TCase.UPPER:
+                if marker_spec.names == TCase.UPPER:
                     component_value = component_value.upper()
-                elif marker_spec.names == DateTimeUtils.TCase.LOWER:
+                elif marker_spec.names == TCase.LOWER:
                     component_value = component_value.casefold()
                 if (
                     marker_spec.width is not None
@@ -843,7 +846,7 @@ class DateTimeUtils:
             # §9.8.4.7 Formatting Other Components
             # Formatting P for am/pm
             # getDateTimeFragment() always returns am/pm lower case so check for UPPER here
-            if marker_spec.names == DateTimeUtils.TCase.UPPER:
+            if marker_spec.names == TCase.UPPER:
                 component_value = component_value.upper()
         return component_value
 
@@ -886,7 +889,10 @@ class DateTimeUtils:
         elif component == "f":
             component_value = str(date.microsecond / 1000.0)
         elif component == "Z" or component == "z":
-            pass
+
+            logging.warning(
+                f"Component {component} not implemented for date extraction."
+            )
         elif component == "C":
             component_value = "ISO"
         elif component == "E":
@@ -983,8 +989,9 @@ class DateTimeUtils:
                 try:
                     components[mpart.component] = mpart.parse(match.group(i))
                 except NotImplementedError as e:
-                    # do nothing
-                    pass
+                    logging.warning(
+                        "NotImplementedError in component %s: %s", mpart.component, e
+                    )
                 i += 1
 
             if not components:
@@ -1007,7 +1014,8 @@ class DateTimeUtils:
                 mask <<= 1
                 if components.get(part) is not None:
                     mask += 1
-                pass
+
+                logging.debug(f"Checked part {part} for mask calculation.")
 
             time_a = DateTimeUtils._is_type(tm_a, mask)
             time_b = not time_a and DateTimeUtils._is_type(tm_b, mask)
@@ -1079,15 +1087,15 @@ class DateTimeUtils:
         return ((~type & mask) == 0) and (type & mask) != 0
 
     @staticmethod
-    def _generate_regex(format_spec: PictureFormat) -> "DateTimeUtils.PictureMatcher":
-        matcher = DateTimeUtils.PictureMatcher()
+    def _generate_regex(format_spec: PictureFormat) -> "PictureMatcher":
+        matcher = PictureMatcher()
         for part in format_spec.parts:
             res = None
             if part.type == "literal":
                 p = re.compile("[.*+?^${}()|\\[\\]\\\\]")
 
                 regex = re.sub(p, r"\g<0>", part.value)
-                res = DateTimeUtils.MatcherPart(regex)
+                res = MatcherPart(regex)
             elif part.component == "Z" or part.component == "z":
                 separator = (
                     len(part.integerFormat.groupingSeparators) == 1
@@ -1101,7 +1109,7 @@ class DateTimeUtils:
                     regex += (
                         part.integerFormat.groupingSeparators[0].character + "[0-9]+"
                     )
-                res = DateTimeUtils.MatcherPartTimeZone(regex, part, separator)
+                res = MatcherPartTimeZone(regex, part, separator)
             elif part.integerFormat is not None:
                 res = DateTimeUtils._generate_regex_with_component(
                     part.component, part.integerFormat
@@ -1134,7 +1142,7 @@ class DateTimeUtils:
                     raise RuntimeError(
                         Constants.ERR_MSG_INVALID_NAME_MODIFIER.format(part.component)
                     )
-                res = DateTimeUtils.MatcherPartLookup(regex, lookup)
+                res = MatcherPartLookup(regex, lookup)
             res.component = part.component
             matcher.parts.append(res)
         return matcher
@@ -1143,20 +1151,22 @@ class DateTimeUtils:
     def _generate_regex_with_component(
         component: Optional[str], format_spec: Optional[Format]
     ) -> MatcherPart:
-        is_upper = format_spec.case_type == DateTimeUtils.TCase.UPPER
-        if format_spec.primary == DateTimeUtils.Formats.LETTERS:
+        is_upper = format_spec.case_type == TCase.UPPER
+        if format_spec.primary == Formats.LETTERS:
             regex = "[A-Z]+" if is_upper else "[a-z]+"
-            matcher = DateTimeUtils.MatcherPartLetters(regex, is_upper)
-        elif format_spec.primary == DateTimeUtils.Formats.ROMAN:
+            matcher = MatcherPartLetters(regex, is_upper)
+        elif format_spec.primary == Formats.ROMAN:
             regex = "[MDCLXVI]+" if is_upper else "[mdclxvi]+"
-            matcher = DateTimeUtils.MatcherPartRoman(regex, is_upper)
-        elif format_spec.primary == DateTimeUtils.Formats.WORDS:
+            matcher = MatcherPartRoman(regex, is_upper)
+        elif format_spec.primary == Formats.WORDS:
             words = set(DateTimeUtils._word_values.keys())
             words.add("and")
             words.add("[\\-, ]")
             regex = "(?:" + "|".join(words) + ")+"
-            matcher = DateTimeUtils.MatcherPartWords(regex)
-        elif format_spec.primary == DateTimeUtils.Formats.DECIMAL:
+            from src.jsonata.DateTimeUtils.MatcherPartWords import MatcherPartWords
+
+            matcher = MatcherPartWords(regex)
+        elif format_spec.primary == Formats.DECIMAL:
             regex = "[0-9]+"
             if component == "Y":
                 regex = "[0-9]{2,4}"
@@ -1172,7 +1182,7 @@ class DateTimeUtils:
 
             if format_spec.ordinal:
                 regex += "(?:th|st|nd|rd)"
-            matcher = DateTimeUtils.MatcherPartDecimal(regex, format_spec)
+            matcher = MatcherPartDecimal(regex, format_spec)
         else:
             raise RuntimeError(Constants.ERR_MSG_SEQUENCE_UNSUPPORTED)
         return matcher

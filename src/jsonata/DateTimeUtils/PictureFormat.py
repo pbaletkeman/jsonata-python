@@ -29,7 +29,7 @@
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
 
-from .SpecPart import SpecPart
+from src.jsonata.DateTimeUtils.SpecPart import SpecPart
 
 
 class PictureFormat:

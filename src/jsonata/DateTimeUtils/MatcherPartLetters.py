@@ -40,6 +40,6 @@ class MatcherPartLetters(MatcherPart):
         self._is_upper = is_upper
 
     def parse(self, value: str) -> int:
-        from . import letters_to_decimal
+        from src.jsonata.DateTimeUtils.DateTimeUtils import DateTimeUtils
 
-        return letters_to_decimal(value, "A" if self._is_upper else "a")
+        return DateTimeUtils.letters_to_decimal(value, "A" if self._is_upper else "a")

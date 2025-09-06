@@ -25,14 +25,14 @@
 #
 
 import copy
-from ..Tokenizer import Token
+from src.jsonata.Tokenizer.Token import Token
 from typing import Any, MutableSequence, Optional, Sequence
 
-from ..JException import JException
-from ..Tokenizer.Tokenizer import Tokenizer
-from ..Utils.Utils import Utils
-from .Symbol import Symbol
-from ..Signature.Signature import Signature
+from src.jsonata.JException.JException import JException
+from src.jsonata.Tokenizer.Tokenizer import Tokenizer
+from src.jsonata.Utils.Utils import Utils
+from src.jsonata.Parser.Symbol import Symbol
+from src.jsonata.Signature.Signature import Signature
 
 
 # var parseSignature = require('./signature')

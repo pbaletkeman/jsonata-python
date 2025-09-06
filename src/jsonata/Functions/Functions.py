@@ -33,6 +33,7 @@ import math
 import random
 import re
 import sys
+import logging
 import unicodedata
 import urllib.parse
 from dataclasses import dataclass
@@ -48,19 +49,17 @@ from typing import (
     Union,
 )
 
-from .Encoder import Encoder
-
-from .Comparator import Comparator
-
-from ..JException import JException
-from ..Utils.Utils import Utils
-from ..DateTimeUtils import DateTimeUtils
-from ..Jsonata import Jsonata
-from ..Signature import Signature
-
-from ..Parser import Parser
-from ..Functions.RegexpMatch import RegexpMatch
-from ..Jsonata.JFunction import JFunction
+from src.jsonata.Utils.JList import JList
+from src.jsonata.Functions.Encoder import Encoder
+from src.jsonata.Functions.Comparator import Comparator
+from src.jsonata.JException import JException
+from src.jsonata.Utils.Utils import Utils
+from src.jsonata.DateTimeUtils import DateTimeUtils
+from src.jsonata.Jsonata import Jsonata
+from src.jsonata.Signature import Signature
+from src.jsonata.Parser import Parser
+from src.jsonata.Functions.RegexpMatch import RegexpMatch
+from src.jsonata.Jsonata.JFunction import JFunction
 
 
 class Functions:
@@ -139,7 +138,7 @@ class Functions:
     @staticmethod
     def string(arg: Optional[Any], prettify: Optional[bool]) -> Optional[str]:
 
-        if isinstance(arg, Utils.JList):
+        if isinstance(arg, JList):
             if arg.outer_wrapper:
                 arg = arg[0]
 
@@ -884,7 +883,7 @@ class Functions:
         try:
             return base64.b64encode(string.encode("utf-8")).decode("utf-8")
         except Exception as e:
-            return None
+            logging.error(str(e))
 
     #
     # Base64 decode a string
@@ -903,7 +902,7 @@ class Functions:
         try:
             return base64.b64decode(string.encode("utf-8")).decode("utf-8")
         except Exception as e:
-            return None
+            logging.error(str(e))
 
     #
     # Encode a string into a component for a url
@@ -1638,9 +1637,9 @@ class Functions:
 
         if isinstance(func, Jsonata.JFunction):
             return func.signature.get_min_number_of_args()
-        elif isinstance(func, Jsonata.JLambda):
+        elif isinstance(func, JLambda):
 
-            return len(signature(func.function).parameters)
+            return len(inspect.signature(func.function).parameters)
         else:
             return len(func.arguments)
 
@@ -2038,7 +2037,7 @@ class Functions:
         if not (isinstance(arr, list)) or len(arr) <= 1:
             return arr
 
-        results = Utils.create_sequence() if (isinstance(arr, Utils.JList)) else []
+        results = Utils.create_sequence() if (isinstance(arr, JList)) else []
 
         for el in arr:
             if el not in results:

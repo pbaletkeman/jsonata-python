@@ -30,9 +30,9 @@ import re
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from ..JException import JException
-from ..Utils.Utils import Utils
-from .Token import Token
+from src.jsonata.JException.JException import JException
+from src.jsonata.Utils.Utils import Utils
+from src.jsonata.Tokenizer.Token import Token
 
 
 class Tokenizer:

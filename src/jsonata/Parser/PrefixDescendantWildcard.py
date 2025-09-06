@@ -1,5 +1,5 @@
-from .Prefix import Prefix
-from .Parser import Parser
+from src.jsonata.Parser.Prefix import Prefix
+from src.jsonata.Parser.Parser import Parser
 
 
 class PrefixDescendantWildcard(Prefix):

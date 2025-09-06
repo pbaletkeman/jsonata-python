@@ -9,4 +9,4 @@ for path in module_files:
     module = os.path.splitext(os.path.basename(path))[0]
     if module != "__init__":
         __all__.append(module)
-        exec(f"from .{module} import *")
+    exec(f"from src.jsonata.Utils.{module} import *")
