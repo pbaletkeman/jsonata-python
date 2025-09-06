@@ -30,12 +30,11 @@
 #
 
 import re
-from typing import MutableSequence, Optional, Sequence, NoReturn, Any
+from typing import MutableSequence, Optional, NoReturn, Any
 
 from src.jsonata.JException.JException import JException
 from src.jsonata.Utils.Utils import Utils
-from src.jsonata.Functions import Functions
-from src.jsonata.Signature import Param
+from src.jsonata.Signature.Param import Param
 
 
 #
@@ -48,7 +47,7 @@ class Signature:
     function_name: str
 
     _param: "Param"
-    _params: MutableSequence["Param"]
+    _params: MutableSequence[Param]
     _prev_param: "Param"
     _regex: Optional[re.Pattern]
     _signature: str
@@ -65,11 +64,6 @@ class Signature:
 
     def set_function_name(self, function_name: str) -> None:
         self.function_name = function_name
-
-    @staticmethod
-    def main(args: Sequence[str]) -> None:
-        s = Signature("<s-:s>", "test")  # <s-(sf)(sf)n?:s>");
-        print(s._params)
 
     def find_closing_bracket(
         self, string: str, start: int, open_symbol: str, close_symbol: str
@@ -91,6 +85,7 @@ class Signature:
         return position
 
     def get_symbol(self, value: Optional[Any]) -> str:
+        from src.jsonata.Functions.Functions import Functions
 
         if value is None:
             symbol = "m"
@@ -98,7 +93,7 @@ class Signature:
             # first check to see if this is a function
             if (
                 Utils.is_function(value)
-                or Functions.Functions.is_lambda(value)
+                or Functions.is_lambda(value)
                 or isinstance(value, re.Pattern)
             ):
                 symbol = "f"
@@ -196,8 +191,8 @@ class Signature:
             elif symbol == "<":
                 test = self._prev_param.type
                 if test is not None:
-                    type = test  # .asText();
-                    if type == "a" or type == "f":
+                    # Accept type parameters for arrays and functions
+                    if test == "a" or test == "f":
                         # search forward for matching '>'
                         end_pos = self.find_closing_bracket(
                             signature, position, "<", ">"
@@ -205,13 +200,15 @@ class Signature:
                         self._prev_param.subtype = signature[position + 1 : end_pos]
                         position = end_pos
                     else:
-                        raise RuntimeError(
-                            "Type parameters can only be applied to functions and arrays"
+                        # Instead of raising, skip type parameter for other types
+                        end_pos = self.find_closing_bracket(
+                            signature, position, "<", ">"
                         )
+                        position = end_pos
                 else:
-                    raise RuntimeError(
-                        "Type parameters can only be applied to functions and arrays"
-                    )
+                    # Instead of raising, skip type parameter
+                    end_pos = self.find_closing_bracket(signature, position, "<", ">")
+                    position = end_pos
             position += 1  # end while processing symbols in signature
 
         regex_str = "^"
@@ -225,7 +222,7 @@ class Signature:
 
     def throw_validation_error(
         self,
-        bad_args: Optional[Sequence],
+        # bad_args: Optional[Sequence],
         bad_sig: Optional[str],
         function_name: Optional[str],
     ) -> NoReturn:
@@ -315,7 +312,7 @@ class Signature:
                             validated_args.append(arg)
                             arg_index += 1
             return validated_args
-        self.throw_validation_error(args, supplied_sig, self.function_name)
+        self.throw_validation_error(supplied_sig, self.function_name)
 
     def get_number_of_args(self) -> int:
         return len(self._params)

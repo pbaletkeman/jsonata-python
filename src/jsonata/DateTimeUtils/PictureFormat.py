@@ -36,7 +36,7 @@ class PictureFormat:
     type: str
     parts: list["SpecPart"]
 
-    def __init__(self, type):
+    def __init__(self):
         self.type = type
         self.parts = []
 

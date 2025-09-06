@@ -32,6 +32,7 @@ import datetime
 import functools
 import logging
 import math
+from src.jsonata.DateTimeUtils.Format import Format
 import re
 from collections import deque
 from typing import Optional, Sequence
@@ -314,10 +315,12 @@ class DateTimeUtils:
         return "".join(letters)
 
     @staticmethod
+    @staticmethod
     def format_integer(value: int, picture: Optional[str]) -> str:
         fmt = DateTimeUtils._analyse_integer_picture(picture)
         return DateTimeUtils._format_integer(value, fmt)
 
+    @staticmethod
     @staticmethod
     def parse_integer(value: Optional[str], picture: Optional[str]) -> Optional[int]:
         format_spec = DateTimeUtils._analyse_integer_picture(picture)
@@ -336,14 +339,14 @@ class DateTimeUtils:
     _suffix123 = _create_suffix_map.__func__()
 
     @staticmethod
-    def _format_integer(value: int, format: Optional[Format]) -> str:
+    def _format_integer(value: int, fmt: Optional[Format]) -> str:
         formatted_integer = ""
         negative = value < 0
         value = abs(value)
-        if format.primary == Formats.LETTERS:
+        if fmt.primary == Formats.LETTERS:
             formatted_integer = DateTimeUtils._decimal_to_letters(
                 int(value),
-                "A" if format.case_type == TCase.UPPER else "a",
+                "A" if fmt.case_type == TCase.UPPER else "a",
             )
         elif format.primary == Formats.ROMAN:
             formatted_integer = DateTimeUtils._decimal_to_roman(int(value))
@@ -453,7 +456,7 @@ class DateTimeUtils:
 
     @staticmethod
     def _analyse_integer_picture(picture: Optional[str]) -> Format:
-        format = Format()
+        fmt = Format()
         primary_format = None
         format_modifier = None
         semicolon = picture.rfind(";")
@@ -463,26 +466,26 @@ class DateTimeUtils:
             primary_format = picture[0:semicolon]
             format_modifier = picture[semicolon + 1 :]
             if format_modifier[0] == "o":
-                format.ordinal = True
+                fmt.ordinal = True
 
         if primary_format == "A":
-            format.case_type = TCase.UPPER
-            format.primary = Formats.LETTERS
+            fmt.case_type = TCase.UPPER
+            fmt.primary = Formats.LETTERS
         elif primary_format == "a":
-            format.primary = Formats.LETTERS
+            fmt.primary = Formats.LETTERS
         elif primary_format == "I":
-            format.case_type = TCase.UPPER
-            format.primary = Formats.ROMAN
+            fmt.case_type = TCase.UPPER
+            fmt.primary = Formats.ROMAN
         elif primary_format == "i":
-            format.primary = Formats.ROMAN
+            fmt.primary = Formats.ROMAN
         elif primary_format == "W":
-            format.case_type = TCase.UPPER
-            format.primary = Formats.WORDS
+            fmt.case_type = TCase.UPPER
+            fmt.primary = Formats.WORDS
         elif primary_format == "Ww":
-            format.case_type = TCase.TITLE
-            format.primary = Formats.WORDS
+            fmt.case_type = TCase.TITLE
+            fmt.primary = Formats.WORDS
         elif primary_format == "w":
-            format.primary = Formats.WORDS
+            fmt.primary = Formats.WORDS
         else:
             zero_code = None
             mandatory_digits = 0
@@ -491,7 +494,7 @@ class DateTimeUtils:
             separator_position = 0
             format_codepoints = list(primary_format)
             # ArrayUtils.reverse(format_codepoints)
-            for ix, code_point in enumerate(reversed(format_codepoints)):
+            for code_point in reversed(format_codepoints):
                 digit = False
                 i = 0
                 while i < len(DateTimeUtils._decimal_groups):
@@ -515,25 +518,25 @@ class DateTimeUtils:
                             GroupingSeparator(separator_position, code_point)
                         )
             if mandatory_digits > 0:
-                format.primary = Formats.DECIMAL
-                format.zeroCode = zero_code
-                format.mandatoryDigits = mandatory_digits
-                format.optionalDigits = optional_digits
+                fmt.primary = Formats.DECIMAL
+                fmt.zeroCode = zero_code
+                fmt.mandatoryDigits = mandatory_digits
+                fmt.optionalDigits = optional_digits
 
                 regular = DateTimeUtils._get_regular_repeat(grouping_separators)
                 if regular > 0:
-                    format.regular = True
-                    format.groupingSeparators.append(
+                    fmt.regular = True
+                    fmt.groupingSeparators.append(
                         GroupingSeparator(regular, grouping_separators[0].character)
                     )
                 else:
-                    format.regular = False
-                    format.groupingSeparators = grouping_separators
+                    fmt.regular = False
+                    fmt.groupingSeparators = grouping_separators
             else:
-                format.primary = Formats.SEQUENCE
-                format.token = primary_format
+                fmt.primary = Formats.SEQUENCE
+                fmt.token = primary_format
 
-        return format
+        return fmt
 
     @staticmethod
     def _get_regular_repeat(separators: Sequence["GroupingSeparator"]) -> int:
@@ -556,7 +559,7 @@ class DateTimeUtils:
 
     @staticmethod
     def _create_default_presentation_modifiers() -> dict[str, str]:
-        map = {
+        mapping = {
             "Y": "1",
             "M": "1",
             "D": "1",
@@ -577,13 +580,13 @@ class DateTimeUtils:
             "C": "n",
             "E": "n",
         }
-        return map
+        return mapping
 
     _default_presentation_modifiers = _create_default_presentation_modifiers.__func__()
 
     @staticmethod
     def _analyse_datetime_picture(picture: str) -> PictureFormat:
-        format = PictureFormat("datetime")
+        fmt = PictureFormat()
         start = 0
         pos = 0
         while pos < len(picture):
@@ -591,12 +594,12 @@ class DateTimeUtils:
                 # check it's not a doubled [[
                 if picture[pos + 1] == "[":
                     # literal [
-                    format.add_literal(picture, start, pos)
-                    format.parts.append(SpecPart("literal", value="["))
+                    fmt.add_literal(picture, start, pos)
+                    fmt.parts.append(SpecPart("literal", value="["))
                     pos += 2
                     start = pos
                     continue
-                format.add_literal(picture, start, pos)
+                fmt.add_literal(picture, start, pos)
                 start = pos
                 pos = picture.find("]", start)
                 if pos == -1:
@@ -609,16 +612,16 @@ class DateTimeUtils:
                 if comma != -1:
                     width_mod = marker[comma + 1 :]
                     dash = width_mod.find("-")
-                    min = None
-                    max = None
+                    min_width = None
+                    max_width = None
                     if dash == -1:
-                        min = width_mod
+                        min_width = width_mod
                     else:
-                        min = width_mod[0:dash]
-                        max = width_mod[dash + 1 :]
+                        min_width = width_mod[0:dash]
+                        max_width = width_mod[dash + 1 :]
                     def_.width = (
-                        DateTimeUtils._parse_width(min),
-                        DateTimeUtils._parse_width(max),
+                        DateTimeUtils._parse_width(min_width),
+                        DateTimeUtils._parse_width(max_width),
                     )
                     pres_mod = marker[1:comma]
                 else:
@@ -679,11 +682,11 @@ class DateTimeUtils:
                         def_.presentation1
                     )
                     def_.integerFormat.ordinal = def_.ordinal
-                format.parts.append(def_)
+                fmt.parts.append(def_)
                 start = pos + 1
             pos += 1
-        format.add_literal(picture, start, pos)
-        return format
+        fmt.add_literal(picture, start, pos)
+        return fmt
 
     @staticmethod
     def _parse_width(wm: Optional[str]) -> Optional[int]:
@@ -719,6 +722,7 @@ class DateTimeUtils:
 
     _iso8601_spec = None
 
+    @staticmethod
     @staticmethod
     def format_datetime(
         millis: int, picture: Optional[str], timezone: Optional[str]
@@ -891,7 +895,7 @@ class DateTimeUtils:
         elif component == "Z" or component == "z":
 
             logging.warning(
-                f"Component {component} not implemented for date extraction."
+                "Component %s not implemented for date extraction.", component
             )
         elif component == "C":
             component_value = "ISO"
@@ -965,6 +969,7 @@ class DateTimeUtils:
         return int((end - start).total_seconds() / (7 * 24 * 60 * 60) + 1)
 
     @staticmethod
+    @staticmethod
     def parse_datetime(timestamp: Optional[str], picture: str) -> Optional[int]:
         format_spec = DateTimeUtils._analyse_datetime_picture(picture)
         match_spec = DateTimeUtils._generate_regex(format_spec)
@@ -1015,7 +1020,7 @@ class DateTimeUtils:
                 if components.get(part) is not None:
                     mask += 1
 
-                logging.debug(f"Checked part {part} for mask calculation.")
+                logging.debug("Checked part %s for mask calculation.", part)
 
             time_a = DateTimeUtils._is_type(tm_a, mask)
             time_b = not time_a and DateTimeUtils._is_type(tm_b, mask)
@@ -1083,8 +1088,8 @@ class DateTimeUtils:
         return None
 
     @staticmethod
-    def _is_type(type: int, mask: int) -> bool:
-        return ((~type & mask) == 0) and (type & mask) != 0
+    def _is_type(type_code: int, mask: int) -> bool:
+        return ((~type_code & mask) == 0) and (type_code & mask) != 0
 
     @staticmethod
     def _generate_regex(format_spec: PictureFormat) -> "PictureMatcher":
@@ -1198,4 +1203,4 @@ class DateTimeUtils:
         return decimal
 
 
-DateTimeUtils._static_initializer()
+# Removed access to protected member

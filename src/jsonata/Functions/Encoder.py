@@ -2,27 +2,27 @@ import decimal
 import json
 
 from src.jsonata.Utils.Utils import Utils
-from src.jsonata.Functions import Functions
-from src.jsonata.Jsonata import Jsonata
 from src.jsonata.Parser import Parser
 from src.jsonata.Jsonata.JFunction import JFunction
 
 
 class Encoder(json.JSONEncoder):
-    def encode(self, arg):
-        if not isinstance(arg, bool) and isinstance(arg, (int, float)):
-            d = decimal.Decimal(arg)
-            res = Functions.Functions.remove_exponent(d, decimal.Context(prec=15))
+    def encode(self, o):
+        if not isinstance(o, bool) and isinstance(o, (int, float)):
+            d = decimal.Decimal(o)
+            from src.jsonata.Functions.Functions import Functions
+
+            res = Functions.remove_exponent(d, decimal.Context(prec=15))
             return str(res).lower()
 
-        return super().encode(arg)
+        return super().encode(o)
 
-    def default(self, arg):
+    def default(self, o):
 
-        if arg is Utils.NULL_VALUE:
+        if o is Utils.NULL_VALUE:
             return None
 
-        if isinstance(arg, (JFunction, Parser.Symbol)):
+        if isinstance(o, (JFunction, Parser.Symbol)):
             return ""
 
-        return super().default(arg)
+        return super().default(o)

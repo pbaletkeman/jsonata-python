@@ -21,6 +21,7 @@
 #
 
 import math
+from src.jsonata.Utils.JList import JList
 from typing import Any, MutableMapping, MutableSequence, Optional, Iterable
 
 from src.jsonata.JException.JException import JException
@@ -74,24 +75,24 @@ class Utils:
     def create_sequence(el: Optional[Any] = NONE) -> list:
         if el is not Utils.NONE:
             if isinstance(el, list) and len(el) == 1:
-                sequence = Utils.JList(el)
+                sequence = JList(el)
             else:
                 # This case does NOT exist in Javascript! Why?
-                sequence = Utils.JList([el])
+                sequence = JList([el])
         else:
-            sequence = Utils.JList()
+            sequence = JList()
         sequence.sequence = True
         return sequence
 
     @staticmethod
     def create_sequence_from_iter(it: Iterable) -> list:
-        sequence = Utils.JList(it)
+        sequence = JList(it)
         sequence.sequence = True
         return sequence
 
     @staticmethod
     def is_sequence(result: Optional[Any]) -> bool:
-        return isinstance(result, Utils.JList) and result.sequence
+        return isinstance(result, JList) and result.sequence
 
     @staticmethod
     def convert_number(n: float) -> Optional[float]:

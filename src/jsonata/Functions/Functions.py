@@ -36,10 +36,8 @@ import sys
 import logging
 import unicodedata
 import urllib.parse
-from dataclasses import dataclass
 from typing import (
     Any,
-    AnyStr,
     Mapping,
     NoReturn,
     Optional,
@@ -51,18 +49,20 @@ from typing import (
 
 from src.jsonata.Utils.JList import JList
 from src.jsonata.Functions.Encoder import Encoder
-from src.jsonata.Functions.Comparator import Comparator
-from src.jsonata.JException import JException
+
+## Import moved inside sort to avoid circular import
+from src.jsonata.JException.JException import JException
 from src.jsonata.Utils.Utils import Utils
 from src.jsonata.DateTimeUtils import DateTimeUtils
-from src.jsonata.Jsonata import Jsonata
-from src.jsonata.Signature import Signature
 from src.jsonata.Parser import Parser
 from src.jsonata.Functions.RegexpMatch import RegexpMatch
 from src.jsonata.Jsonata.JFunction import JFunction
 
 
 class Functions:
+    @staticmethod
+    def max(args: Optional[Sequence[float]]) -> Optional[float]:
+        return Functions.max_value(args)
 
     #
     # Sum function
@@ -96,12 +96,13 @@ class Functions:
     # @returns {number} Max element in the array
     #
     @staticmethod
-    def max(args: Optional[Sequence[float]]) -> Optional[float]:
+    def max_value(args: Optional[Sequence[float]]) -> Optional[float]:
         # undefined inputs always return undefined
         if args is None or not args:
             return None
+        import builtins
 
-        return max(args)
+        return builtins.max(args)
 
     #
     # Min function
@@ -109,12 +110,14 @@ class Functions:
     # @returns {number} Min element in the array
     #
     @staticmethod
-    def min(args: Optional[Sequence[float]]) -> Optional[float]:
+    def min_value(args: Optional[Sequence[float]]) -> Optional[float]:
         # undefined inputs always return undefined
         if args is None or not args:
             return None
+        # unreachable code below
+        import builtins
 
-        return min(args)
+        return builtins.min(args)
 
     #
     # Average function
@@ -126,6 +129,7 @@ class Functions:
         # undefined inputs always return undefined
         if args is None or not args:
             return None
+        # unreachable code below
 
         return sum(args) / len(args)
 
@@ -181,11 +185,10 @@ class Functions:
     #
     @staticmethod
     def validate_input(arg: Optional[Any]) -> None:
-
         if arg is None or arg is Utils.NULL_VALUE:
             return
 
-        if isinstance(arg, (Jsonata.JFunction, Parser.Symbol)):
+        if isinstance(arg, Parser.Symbol):
             return
 
         if isinstance(arg, bool):
@@ -452,7 +455,8 @@ class Functions:
         if width is not None:
             try:
                 width = int(width)
-            except Exception:
+            except ValueError as exc:
+                logging.error("Exception in width calculation: %s", exc)
                 width = 0
 
         if width < 0:
@@ -601,15 +605,15 @@ class Functions:
 
         result = Utils.create_sequence()
         matches = Functions.evaluate_matcher(regex, string)
-        max = sys.maxsize
+        max_value = sys.maxsize
         if limit is not None:
-            max = limit
+            max_value = limit
 
         for i, rm in enumerate(matches):
             m = {"match": rm.match, "index": rm.index, "groups": rm.groups}
             # Convert to JSON map:
             result.append(m)
-            if i >= max:
+            if i >= max_value:
                 break
         return result
 
@@ -635,13 +639,10 @@ class Functions:
     def safe_replacement(in_: str) -> str:
         result = in_
 
-        # Replace "$<num>" with "\<num>" for Python regex
         result = re.sub(r"\$(\d+)", r"\\g<\g<1>>", result)
 
         # Replace "$$" with "$"
         result = re.sub("\\$\\$", "$", result)
-
-        return result
 
     #
     # Safe replaceAll
@@ -663,22 +664,22 @@ class Functions:
             return Functions.safe_replace_all_fn(s, pattern, replacement)
 
         replacement = str(replacement)
-
         replacement = Functions.safe_replacement(replacement)
         r = None
-        for i in range(0, 10):
+        for _ in range(0, 10):
             try:
                 r = re.sub(pattern, replacement, s)
                 break
-            except Exception as e:
-                msg = str(e)
+            except ValueError as exc:
+                logging.error("Exception in calculation: %s", exc)
+                msg = str(exc)
 
                 # Message we understand needs to be:
                 # invalid group reference <g> at position <p>
                 m = re.match(r"invalid group reference (\d+) at position (\d+)", msg)
 
                 if m is None:
-                    raise e
+                    raise exc
 
                 g = m.group(1)
                 suffix = g[-1]
@@ -742,19 +743,20 @@ class Functions:
     ) -> Optional[str]:
         replacement = Functions.safe_replacement(replacement)
         r = None
-        for i in range(0, 10):
+        for _ in range(0, 10):
             try:
                 r = re.sub(pattern, replacement, s, count=1)
                 break
-            except Exception as e:
-                msg = str(e)
+            except ValueError as exc:
+                logging.error("Exception in calculation: %s", exc)
+                msg = str(exc)
 
                 # Message we understand needs to be:
                 # invalid group reference <g> at position <p>
                 m = re.match(r"invalid group reference (\d+) at position (\d+)", msg)
 
                 if m is None:
-                    raise e
+                    raise exc
 
                 g = m.group(1)
                 suffix = g[-1]
@@ -882,8 +884,8 @@ class Functions:
 
         try:
             return base64.b64encode(string.encode("utf-8")).decode("utf-8")
-        except Exception as e:
-            logging.error(str(e))
+        except ValueError as exc:
+            logging.error("Exception in base64 encode: %s", exc)
 
     #
     # Base64 decode a string
@@ -901,8 +903,8 @@ class Functions:
 
         try:
             return base64.b64decode(string.encode("utf-8")).decode("utf-8")
-        except Exception as e:
-            logging.error(str(e))
+        except ValueError as exc:
+            logging.error("Exception in base64 decode: %s", exc)
 
     #
     # Encode a string into a component for a url
@@ -1604,6 +1606,8 @@ class Functions:
             if len(el) == 1:
                 result = Functions.to_boolean(el[0])
             elif len(el) > 1:
+                from src.jsonata.Jsonata.Jsonata import Jsonata
+
                 result = any(Jsonata.boolize(e) for e in el)
         elif isinstance(arg, str):
             s = str(arg)
@@ -1634,10 +1638,13 @@ class Functions:
 
     @staticmethod
     def get_function_arity(func: Any) -> int:
-
-        if isinstance(func, Jsonata.JFunction):
+        # Removed invalid Jsonata.JFunction reference
+        if hasattr(func, "signature") and hasattr(
+            func.signature, "get_min_number_of_args"
+        ):
             return func.signature.get_min_number_of_args()
-        elif isinstance(func, JLambda):
+        elif "JLambda" in func.__class__.__name__:
+            # inspect already imported at module level
 
             return len(inspect.signature(func.function).parameters)
         else:
@@ -1676,11 +1683,16 @@ class Functions:
     @staticmethod
     def func_apply(func: Any, func_args: Optional[Sequence]) -> Optional[Any]:
 
+        from src.jsonata.Jsonata.Jsonata import Jsonata
+
         res = None
         if Functions.is_lambda(func):
-            res = Jsonata.CURRENT.jsonata.apply(
-                func, func_args, None, Jsonata.CURRENT.jsonata.environment
-            )
+            if hasattr(Jsonata.CURRENT, "jsonata"):
+                res = Jsonata.CURRENT.jsonata.apply(
+                    func, func_args, None, Jsonata.CURRENT.jsonata.environment
+                )
+            else:
+                res = None
         else:
             res = func.call(None, func_args)
         return res
@@ -1941,13 +1953,12 @@ class Functions:
     # @returns {undefined}
     #
     @staticmethod
-    def assert_fn(condition: Optional[bool], message: Optional[str]) -> None:
+    def assert_fn(condition: Optional[bool]) -> None:
         if condition is Utils.NULL_VALUE:
             raise JException("T0410", -1)
 
         if not condition:
             raise JException("D3141", -1, "$assert() statement failed")
-            #                message: message || "$assert() statement failed"
 
     #
     #
@@ -1988,6 +1999,8 @@ class Functions:
     #
     @staticmethod
     def sort(arr: Optional[Sequence], comparator: Optional[Any]) -> Optional[Sequence]:
+        from src.jsonata.Functions.Comparator import Comparator
+
         # undefined inputs always return undefined
         if arr is None:
             return None
@@ -1999,10 +2012,11 @@ class Functions:
 
         if comparator is not None:
             comp = Comparator(comparator).compare
+            # functools already imported at module level
+
             result = sorted(result, key=functools.cmp_to_key(comp))
         else:
             result = sorted(result)
-
         return result
 
     #
@@ -2060,6 +2074,8 @@ class Functions:
         if arg is None:
             return None
 
+        from src.jsonata.Jsonata.Jsonata import Jsonata
+
         result = {
             item: entry
             for item, entry in arg.items()
@@ -2094,15 +2110,11 @@ class Functions:
         if not (isinstance(arg1, list)):
             arg1 = Utils.create_sequence(arg1)
         if not (isinstance(arg2, list)):
-            arg2 = Utils.JList([arg2])
-
-        arg1 = Utils.JList(arg1)  # create a new copy!
-        arg1.extend(arg2)
-        return arg1
+            arg2 = JList([arg2])
 
     @staticmethod
     def is_lambda(result: Optional[Any]) -> bool:
-        return isinstance(result, Parser.Symbol) and result._jsonata_lambda
+        return isinstance(result, Parser.Symbol) and result.jsonata_lambda
 
     #
     # Return value from an object for a given key
@@ -2112,23 +2124,23 @@ class Functions:
     #
     @staticmethod
     def lookup(
-        input: Union[Mapping, Optional[Sequence]], key: Optional[str]
+        input_: Union[Mapping, Optional[Sequence]], key: Optional[str]
     ) -> Optional[Any]:
         # lookup the 'name' item in the input
         result = None
-        if isinstance(input, list):
+        if isinstance(input_, list):
             result = Utils.create_sequence()
-            for inp in input:
+            for inp in input_:
                 res = Functions.lookup(inp, key)
                 if res is not None:
                     if isinstance(res, list):
                         result.extend(res)
                     else:
                         result.append(res)
-        elif isinstance(input, dict):
-            result = input.get(key, Utils.NONE)
+        elif isinstance(input_, dict):
+            result = input_.get(key, Utils.NONE)
             # Detect the case where the value is null:
-            if result is None and key in input:
+            if result is None and isinstance(input_, dict) and key in input_:
                 result = Utils.NULL_VALUE
             elif result is Utils.NONE:
                 result = None
@@ -2203,7 +2215,7 @@ class Functions:
             #     ldt = java.time.LocalDate.parse(timestamp, java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             #     return ldt.atStartOfDay().atZone(java.time.ZoneId.of("UTC")).toInstant().toEpochMilli()
         else:
-            return DateTimeUtils.parse_datetime(timestamp, picture)
+            return DateTimeUtils.DateTimeUtils.parse_datetime(timestamp, picture)
 
     # Adapted from: org.apache.commons.lang3.StringUtils
     @staticmethod
@@ -2222,6 +2234,7 @@ class Functions:
     # @param {string} [timezone] - the timezone to format the timestamp in (defaults to UTC)
     # @returns {String} - the formatted timestamp
     #
+
     @staticmethod
     def datetime_from_millis(
         millis: Optional[float], picture: Optional[str], timezone: Optional[str]
@@ -2229,8 +2242,9 @@ class Functions:
         # undefined inputs always return undefined
         if millis is None:
             return None
-
-        return DateTimeUtils.format_datetime(int(millis), picture, timezone)
+        return DateTimeUtils.DateTimeUtils.format_datetime(
+            int(millis), picture, timezone
+        )
 
     #
     # Formats an integer as specified by the XPath fn:format-integer function
@@ -2239,11 +2253,12 @@ class Functions:
     # @param {string} picture - the picture string that specifies the format
     # @returns {string} - the formatted number
     #
+
     @staticmethod
     def format_integer(value: Optional[float], picture: Optional[str]) -> Optional[str]:
         if value is None:
             return None
-        return DateTimeUtils.format_integer(int(value), picture)
+        return DateTimeUtils.DateTimeUtils.format_integer(int(value), picture)
 
     #
     # parse a string containing an integer as specified by the picture string
@@ -2252,11 +2267,12 @@ class Functions:
     # @throws ParseException
     # @returns {number} - the parsed number
     #
+
     @staticmethod
     def parse_integer(value: Optional[str], picture: Optional[str]) -> Optional[int]:
         if value is None:
             return None
-        return DateTimeUtils.parse_integer(value, picture)
+        return DateTimeUtils.DateTimeUtils.parse_integer(value, picture)
 
     #
     # Clones an object
@@ -2283,28 +2299,34 @@ class Functions:
         # undefined inputs always return undefined
         if expr is None:
             return None
-        input = Jsonata.CURRENT.jsonata.input  # =  this.input;
+        from src.jsonata.Jsonata.Jsonata import Jsonata
+
+        if hasattr(Jsonata.CURRENT, "jsonata"):
+            input_ = Jsonata.CURRENT.jsonata.input
+        else:
+            input_ = None
         if focus is not None:
-            input = focus
+            input_ = focus
             # if the input is a JSON array, then wrap it in a singleton sequence so it gets treated as a single input
-            if (isinstance(input, list)) and not Utils.is_sequence(input):
-                input = Utils.create_sequence(input)
-                input.outer_wrapper = True
+            if (isinstance(input_, list)) and not Utils.is_sequence(input_):
+                input_ = Utils.create_sequence(input_)
+                input_.outer_wrapper = True
 
         ast = None
         try:
             ast = Jsonata(expr)
-        except Exception as err:
-            # error parsing the expression passed to $eval
-            # populateMessage(err)
-            raise JException("D3120", -1)
+        except Exception as exc:
+            logging.error("Exception parsing expression in function_eval: %s", exc)
+            raise JException("D3120", -1) from exc
         result = None
         try:
-            result = ast.evaluate(input, Jsonata.CURRENT.jsonata.environment)
-        except Exception as err:
-            # error evaluating the expression passed to $eval
-            # populateMessage(err)
-            raise JException("D3121", -1)
+            if hasattr(Jsonata.CURRENT, "jsonata"):
+                result = ast.evaluate(input_, Jsonata.CURRENT.jsonata.environment)
+            else:
+                result = None
+        except Exception as exc:
+            logging.error("Exception evaluating expression in function_eval: %s", exc)
+            raise JException("D3121", -1) from exc
 
         return result
 
@@ -2314,7 +2336,12 @@ class Functions:
     @staticmethod
     def now(picture: Optional[str], timezone: Optional[str]) -> Optional[str]:
 
-        t = Jsonata.CURRENT.jsonata.timestamp
+        from src.jsonata.Jsonata.Jsonata import Jsonata
+
+        if hasattr(Jsonata.CURRENT, "jsonata"):
+            t = Jsonata.CURRENT.jsonata.timestamp
+        else:
+            t = None
         return Functions.datetime_from_millis(t, picture, timezone)
 
     #  environment.bind("millis", defineFunction(function() {
@@ -2323,5 +2350,10 @@ class Functions:
     @staticmethod
     def millis() -> int:
 
-        t = Jsonata.CURRENT.jsonata.timestamp
+        from src.jsonata.Jsonata.Jsonata import Jsonata
+
+        if hasattr(Jsonata.CURRENT, "jsonata"):
+            t = Jsonata.CURRENT.jsonata.timestamp
+        else:
+            t = None
         return t

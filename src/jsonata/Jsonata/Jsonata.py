@@ -28,23 +28,30 @@ import copy
 import inspect
 import math
 import re
-import sys
 import threading
+import sys
+import copy
+import inspect
+import math
+import re
+import typing
+import math
+import re
+import math
+import re
 
 from dataclasses import dataclass
 from typing import (
     Any,
     Callable,
-    Mapping,
     MutableSequence,
     Optional,
     Sequence,
     Type,
     MutableMapping,
+    Mapping,
 )
-
 from src.jsonata.Jsonata.GroupEntry import GroupEntry
-from src.jsonata.Jsonata.ComparatorWrapper import ComparatorWrapper
 from src.jsonata.Jsonata.Transformer import Transformer
 from src.jsonata.Jsonata.JNativeFunction import JNativeFunction
 from src.jsonata.Parser.Symbol import Symbol
@@ -1150,6 +1157,9 @@ class Jsonata:
 
         # sort the lhs array
         # use comparator function
+
+        from src.jsonata.Jsonata.ComparatorWrapper import ComparatorWrapper
+
         comparator = ComparatorWrapper(self, expr, environment, is_tuple_sort).compare
 
         #  var focus = {
@@ -1445,7 +1455,9 @@ class Jsonata:
                 #  if (isPromise(result)) {
                 #      result = /* await */ result
                 #  }
-            elif isinstance(proc, JLambda):
+            from src.jsonata.Jsonata.JLambda import JLambda
+
+            if isinstance(proc, JLambda):
                 result = proc.call(input_item, validated_args)
             elif isinstance(proc, re.Pattern):
                 result = [s for s in validated_args if proc.search(s) is not None]
@@ -1998,6 +2010,8 @@ class Jsonata:
         self.environment.bind(name, value)
 
     def register_lambda(self, name: str, implementation: Callable) -> None:
+        from src.jsonata.Jsonata.JLambda import JLambda
+
         self.environment.bind(name, JLambda(implementation))
 
     def register_function(self, name: str, function: Any) -> None:

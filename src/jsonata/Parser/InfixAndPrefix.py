@@ -1,4 +1,5 @@
 from src.jsonata.Parser.Infix import Infix
+from typing import Optional, Any
 
 
 class InfixAndPrefix(Infix):
@@ -21,6 +22,3 @@ class InfixAndPrefix(Infix):
         # IMPORTANT: make sure to allocate a new Prefix!!!
         c.prefix = self._outer_instance.Prefix(c.id)
         return c
-
-
-from typing import Optional, Any

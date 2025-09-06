@@ -1,13 +1,13 @@
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.jsonata.Jsonata.Jsonata import Jsonata
 
 from src.jsonata.Parser.Symbol import Symbol
 from src.jsonata.JException.JException import JException
-from src.jsonata.Functions.Functions import Functions
 from src.jsonata.Jsonata.JFunctionCallable import JFunctionCallable
 from src.jsonata.Jsonata.Frame import Frame
-from src.jsonata.Parser.Parser import Parser
 from src.jsonata.Utils.Utils import Utils
-from src.jsonata.Jsonata.Jsonata import Jsonata
 
 
 class Transformer(JFunctionCallable):
@@ -20,13 +20,15 @@ class Transformer(JFunctionCallable):
         self._expr = expr
         self._environment = environment
 
-    def call(self, input: Optional[Any], args: Optional[Sequence]) -> Optional[Any]:
+    def call(self, input_: Optional[Any], args: Optional[Sequence]) -> Optional[Any]:
         # /* async */ Object (obj) { // signature <(oa):o>
+
+        from src.jsonata.Functions.Functions import Functions
 
         obj = args[0]
 
         # undefined inputs always return undefined
-        if obj is None:
+        if obj is None or input_ is None:
             return None
 
         # this Object returns a copy of obj with changes specified by the pattern/operation

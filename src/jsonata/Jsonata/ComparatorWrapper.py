@@ -1,9 +1,10 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.jsonata.Jsonata.Jsonata import Jsonata
 
 from src.jsonata.JException.JException import JException
 from src.jsonata.Jsonata.Frame import Frame
-from src.jsonata.Jsonata.Jsonata import Jsonata
-from src.jsonata.Parser.Parser import Parser
 from src.jsonata.Parser.Symbol import Symbol
 
 

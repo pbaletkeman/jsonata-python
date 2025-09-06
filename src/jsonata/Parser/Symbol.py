@@ -4,6 +4,10 @@ import copy
 
 
 class Symbol:
+    @property
+    def jsonata_lambda(self):
+        return self._jsonata_lambda
+
     # Symbol s
 
     # Procedure:
