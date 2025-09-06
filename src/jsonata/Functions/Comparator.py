@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from typing import Any, Optional
 
+from src.jsonata.Jsonata import JLambda
 from src.jsonata.Functions.Functions import Functions
 from src.jsonata.Jsonata import Jsonata
 
@@ -11,7 +12,7 @@ class Comparator:
     def __init__(self, comparator):
 
         if isinstance(comparator, Callable):
-            self._comparator = Jsonata.JLambda(comparator)
+            self._comparator = JLambda(comparator)
         else:
             self._comparator = comparator
 

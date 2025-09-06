@@ -1,5 +1,6 @@
 from typing import Any, MutableSequence, Optional, Sequence
 from src.jsonata.JException.JException import JException
+import copy
 
 
 class Symbol:
@@ -20,26 +21,21 @@ class Symbol:
     # Ancestor attributes
 
     def nud(self):
-    from src.jsonata.Parser.Parser import Parser
-
         # error - symbol has been invoked as a unary operator
         err = JException("S0211", self.position, self.value)
-
         if self._outer_instance.recover:
-            #
-            #                err.remaining = remainingTokens()
-            #                err.type = "error"
-            #                errors.add(err)
-            #                return err
-            #
-            return Parser.Symbol("(error)")
+            # err.remaining = remainingTokens()
+            # err.type = "error"
+            # errors.add(err)
+            # return err
+            return Symbol("(error)")
         else:
             raise err
 
     def led(self, left):
         raise NotImplementedError("led not implemented")
 
-    _outer_instance: "Parser"
+    _outer_instance: Optional[Any]
     id: Optional[str]
     type: Optional[str]
     value: Optional[Any]
@@ -48,12 +44,12 @@ class Symbol:
     position: int
     keep_array: bool
     descending: bool
-    expression: "Optional[Parser.Symbol]"
-    seeking_parent: "Optional[MutableSequence[Parser.Symbol]]"
+    expression: "Optional[Symbol]"
+    seeking_parent: "Optional[MutableSequence[Symbol]]"
     errors: Optional[Sequence[Exception]]
-    steps: "Optional[MutableSequence[Parser.Symbol]]"
-    slot: "Optional[Parser.Symbol]"
-    next_function: "Optional[Parser.Symbol]"
+    steps: "Optional[MutableSequence[Symbol]]"
+    slot: "Optional[Symbol]"
+    next_function: "Optional[Symbol]"
     keep_singleton_array: bool
     consarray: bool
     level: int
@@ -62,57 +58,56 @@ class Symbol:
     thunk: bool
 
     # Procedure:
-    procedure: "Optional[Parser.Symbol]"
-    arguments: "Optional[MutableSequence[Parser.Symbol]]"
-    body: "Optional[Parser.Symbol]"
-    predicate: "Optional[MutableSequence[Parser.Symbol]]"
-    stages: "Optional[MutableSequence[Parser.Symbol]]"
+    procedure: "Optional[Symbol]"
+    arguments: "Optional[MutableSequence[Symbol]]"
+    body: "Optional[Symbol]"
+    predicate: "Optional[MutableSequence[Symbol]]"
+    stages: "Optional[MutableSequence[Symbol]]"
     input: Optional[Any]
     # environment: jsonata.Jsonata.Frame | None # creates circular ref
     tuple: Optional[Any]
     expr: Optional[Any]
-    group: "Optional[Parser.Symbol]"
-    name: "Optional[Parser.Symbol]"
+    group: "Optional[Symbol]"
+    name: "Optional[Symbol]"
 
     # Infix attributes
-    lhs: "Optional[Parser.Symbol]"
-    rhs: "Optional[Parser.Symbol]"
+    lhs: "Optional[Symbol]"
+    rhs: "Optional[Symbol]"
 
     # where rhs = list of Symbol pairs
-    lhs_object: "Optional[Sequence[Sequence[Parser.Symbol]]]"
-    rhs_object: "Optional[Sequence[Sequence[Parser.Symbol]]]"
+    lhs_object: "Optional[Sequence[Sequence[Symbol]]]"
+    rhs_object: "Optional[Sequence[Sequence[Symbol]]]"
 
     # where rhs = list of Symbols
-    rhs_terms: "Optional[Sequence[Parser.Symbol]]"
-    terms: "Optional[Sequence[Parser.Symbol]]"
+    rhs_terms: "Optional[Sequence[Symbol]]"
+    terms: "Optional[Sequence[Symbol]]"
 
     # Ternary operator:
-    condition: "Optional[Parser.Symbol]"
-    then: "Optional[Parser.Symbol]"
-    _else: "Optional[Parser.Symbol]"
+    condition: "Optional[Symbol]"
+    then: "Optional[Symbol]"
+    _else: "Optional[Symbol]"
 
-    expressions: "Optional[MutableSequence[Parser.Symbol]]"
+    expressions: "Optional[MutableSequence[Symbol]]"
 
     # processAST error handling
-    error: "Optional[jexception.JException]"
+    error: "Optional[JException]"
     signature: "Optional[Any]"
 
     # Prefix attributes
-    pattern: "Optional[Parser.Symbol]"
-    update: "Optional[Parser.Symbol]"
-    delete: "Optional[Parser.Symbol]"
+    pattern: "Optional[Symbol]"
+    update: "Optional[Symbol]"
+    delete: "Optional[Symbol]"
 
     # Ancestor attributes
     label: Optional[str]
     index: Optional[Any]
     _jsonata_lambda: bool
-    ancestor: "Optional[Parser.Symbol]"
+    ancestor: "Optional[Symbol]"
 
-    def __init__(self, outer_instance, id=None, bp=0):
+    def __init__(self, outer_instance, symbol_id=None, bp=0):
         self._outer_instance = outer_instance
-
-        self.id = id
-        self.value = id
+        self.id = symbol_id
+        self.value = symbol_id
         self.bp = bp
         # use register(Symbol) ! Otherwise inheritance doesn't work
         #            Symbol s = symbolTable.get(id)

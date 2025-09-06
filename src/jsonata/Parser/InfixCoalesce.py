@@ -1,9 +1,9 @@
-from .Infix import Infix
-from .Parser import Parser
+from src.jsonata.Parser.Infix import Infix
+from src.jsonata.Parser.Symbol import Symbol
 
 
 class InfixCoalesce(Infix):
-    _outer_instance: "Parser"
+    _outer_instance: object
 
     def __init__(self, outer_instance, get):
         super().__init__(outer_instance, "??", get)
@@ -12,10 +12,10 @@ class InfixCoalesce(Infix):
     def led(self, left):
         self.type = "condition"
         # condition becomes function exists(left)
-        cond = Parser.Symbol(self._outer_instance)
+        cond = Symbol(self._outer_instance)
         cond.type = "function"
         cond.value = "("
-        proc = Parser.Symbol(self._outer_instance)
+        proc = Symbol(self._outer_instance)
         proc.type = "variable"
         proc.value = "exists"
         cond.procedure = proc

@@ -1,5 +1,5 @@
-from .Infix import Infix
-from .Parser import Parser
+from src.jsonata.Parser.Infix import Infix
+from src.jsonata.Parser.Parser import Parser
 
 
 class InfixFieldWildcard(Infix):

@@ -1,10 +1,10 @@
-from .Infix import Infix
-from .Parser import Parser
-from ..Tokenizer.Tokenizer import Tokenizer
+from src.jsonata.Parser.Infix import Infix
+from src.jsonata.Parser.Symbol import Symbol
+from src.jsonata.Tokenizer.Tokenizer import Tokenizer
 
 
 class InfixArrayConstructor(Infix):
-    _outer_instance: "Parser"
+    _outer_instance: object
 
     def __init__(self, outer_instance, get):
         super().__init__(outer_instance, "[", get)
@@ -17,14 +17,14 @@ class InfixArrayConstructor(Infix):
                 item = self._outer_instance.expression(0)
                 if self._outer_instance.node.id == "..":
                     # range operator
-                    range = Parser.Symbol(self._outer_instance)
-                    range.type = "binary"
-                    range.value = ".."
-                    range.position = self._outer_instance.node.position
-                    range.lhs = item
+                    range_symbol = Symbol(self._outer_instance)
+                    range_symbol.type = "binary"
+                    range_symbol.value = ".."
+                    range_symbol.position = self._outer_instance.node.position
+                    range_symbol.lhs = item
                     self._outer_instance.advance("..")
-                    range.rhs = self._outer_instance.expression(0)
-                    item = range
+                    range_symbol.rhs = self._outer_instance.expression(0)
+                    item = range_symbol
                 a.append(item)
                 if self._outer_instance.node.id != ",":
                     break

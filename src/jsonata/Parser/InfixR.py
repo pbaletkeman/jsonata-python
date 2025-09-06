@@ -1,15 +1,16 @@
 # match infix operators
 # <expression> <operator> <expression>
 # right associative
-from .Parser import Parser
-from .Symbol import Symbol
+
+from src.jsonata.Parser.Symbol import Symbol
 
 
 class InfixR(Symbol):
-    _outer_instance: "Parser"
+    _outer_instance: object
 
-    def __init__(self, outer_instance, id, bp):
-        super().__init__(outer_instance, id, bp)
+    def __init__(self, outer_instance, symbol_id, bp):
+        super().__init__(outer_instance, symbol_id, bp)
         self._outer_instance = outer_instance
 
-    # abstract Object led()
+    def led(self, left):
+        raise NotImplementedError("led not implemented in InfixR")

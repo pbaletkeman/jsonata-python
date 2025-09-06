@@ -12,7 +12,7 @@ class JFunction(JFunctionCallable, JFunctionSignatureValidation):
     function_name: Optional[str]
 
     def __init__(self, function, signature):
-        from ..Signature.Signature import Signature
+        from src.jsonata.Signature.Signature import Signature
 
         self.function = function
         if signature is not None:

@@ -1,16 +1,14 @@
-from .Infix import Infix
-from .Parser import Parser
+from src.jsonata.Parser.Infix import Infix
 
 
 class InfixAndPrefix(Infix):
-    _outer_instance: "Parser"
-    prefix: "Parser.Prefix"
+    _outer_instance: object
+    prefix: Optional[Any]
 
-    def __init__(self, outer_instance, id, bp=0):
-        super().__init__(outer_instance, id, bp)
+    def __init__(self, outer_instance, symbol_id, bp=0):
+        super().__init__(outer_instance, symbol_id, bp)
         self._outer_instance = outer_instance
-
-        self.prefix = Parser.Prefix(outer_instance, id)
+        self.prefix = outer_instance.Prefix(symbol_id)
 
     def nud(self):
         return self.prefix.nud()
@@ -21,5 +19,8 @@ class InfixAndPrefix(Infix):
     def clone(self):
         c = super().clone()
         # IMPORTANT: make sure to allocate a new Prefix!!!
-        c.prefix = Parser.Prefix(self._outer_instance, c.id)
+        c.prefix = self._outer_instance.Prefix(c.id)
         return c
+
+
+from typing import Optional, Any

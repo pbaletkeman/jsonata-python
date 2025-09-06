@@ -1,9 +1,9 @@
 # match infix operators
 # <expression> <operator> <expression>
 # left associative
-from .Symbol import Symbol
-from ..Tokenizer.Tokenizer import Tokenizer
-from .Parser import Parser
+from src.jsonata.Parser.Symbol import Symbol
+from src.jsonata.Tokenizer.Tokenizer import Tokenizer
+from src.jsonata.Parser.Parser import Parser
 
 
 class Infix(Symbol):

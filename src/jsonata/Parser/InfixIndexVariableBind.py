@@ -1,7 +1,7 @@
-from ..JException.JException import JException
-from .Infix import Infix
-from ..Tokenizer.Tokenizer import Tokenizer
-from .Parser import Parser
+from src.jsonata.JException.JException import JException
+from src.jsonata.Parser.Infix import Infix
+from src.jsonata.Tokenizer.Tokenizer import Tokenizer
+from src.jsonata.Parser.Parser import Parser
 
 
 class InfixIndexVariableBind(Infix):

@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import Any, MutableMapping, Optional
-from ..Timebox import Timebox
-from ..Utils.Utils import Utils
+from src.jsonata.Timebox import Timebox
+from src.jsonata.Utils.Utils import Utils
 
 
 class Frame:
