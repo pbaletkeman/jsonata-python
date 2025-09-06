@@ -12,7 +12,14 @@ class InfixFunctionInvocation(Infix):
         self._outer_instance = outer_instance
 
     def led(self, left):
-        # left is is what we are trying to invoke
+        """
+        Handles the left denotation for the function invocation operator (().
+        Sets up procedure, arguments, and handles lambda function definitions and signatures.
+        Args:
+            left: The left operand (function to invoke).
+        Returns:
+            InfixFunctionInvocation: The updated instance.
+        """
         self.procedure = left
         self.type = "function"
         self.arguments = []
@@ -35,14 +42,11 @@ class InfixFunctionInvocation(Infix):
         # if the name of the function is 'function' or λ, then this is function definition (lambda function)
         if left.type == "name" and (left.value == "function" or left.value == "\u03bb"):
             # all of the args must be VARIABLE tokens
-            # int index = 0
             for arg in self.arguments:
-                # this.arguments.forEach(function (arg, index) {
                 if arg.type != "variable":
                     return self._outer_instance.handle_error(
                         JException("S0208", arg.position, arg.value)
                     )
-                # index++
             self.type = "lambda"
             # is the next token a '<' - if so, parse the function signature
             if self._outer_instance.node.id == "<":
@@ -74,6 +78,12 @@ class InfixFunctionInvocation(Infix):
     # register(new Prefix("(") {
 
     def nud(self):
+        """
+        Handles the null denotation for the parenthesis operator (block expression).
+        Collects expressions separated by semicolons and sets type to 'block'.
+        Returns:
+            InfixFunctionInvocation: The updated instance.
+        """
         if self._outer_instance.dbg:
             print("Prefix (")
         expressions = []

@@ -28,15 +28,16 @@
 #   +1 914 499 1900
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
+
 import datetime
 import functools
 import logging
 import math
-from src.jsonata.DateTimeUtils.Format import Format
 import re
 from collections import deque
 from typing import Optional, Sequence
 
+from src.jsonata.DateTimeUtils.Format import Format
 from src.jsonata.DateTimeUtils.TCase import TCase
 from src.jsonata.DateTimeUtils.MatcherPartTimeZone import MatcherPartTimeZone
 from src.jsonata.DateTimeUtils.MatcherPartLookup import MatcherPartLookup
@@ -44,7 +45,6 @@ from src.jsonata.DateTimeUtils.MatcherPartLetters import MatcherPartLetters
 from src.jsonata.DateTimeUtils.MatcherPartRoman import MatcherPartRoman
 from src.jsonata.DateTimeUtils.MatcherPartDecimal import MatcherPartDecimal
 from src.jsonata.DateTimeUtils.Formats import Formats
-
 from src.jsonata.DateTimeUtils.PictureMatcher import PictureMatcher
 from src.jsonata.Constants.Constants import Constants
 from src.jsonata.DateTimeUtils.GroupingSeparator import GroupingSeparator

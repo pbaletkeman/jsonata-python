@@ -15,4 +15,5 @@ class JFunctionSignatureValidation:
         Returns:
             Validated arguments or original args if no signature.
         """
-        pass
+        # Should be implemented by subclasses.
+        raise NotImplementedError("Subclasses must implement validate method.")

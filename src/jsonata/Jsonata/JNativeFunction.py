@@ -12,6 +12,14 @@ class JNativeFunction(JFunction):
     nargs: int
 
     def __init__(self, function_name, signature, clz, impl_method_name):
+        """
+        Initialize a JNativeFunction object.
+        Args:
+            function_name: Name of the function.
+            signature: Signature string.
+            clz: Class containing the function implementation.
+            impl_method_name: Name of the implementation method.
+        """
         super().__init__(None, None)
         self.function_name = function_name
         self.signature = Signature(signature, function_name)
@@ -34,10 +42,25 @@ class JNativeFunction(JFunction):
                 + impl_method_name
             )
 
-    def call(self, args: Optional[Sequence]) -> Optional[Any]:
+    def call(
+        self, input_item: Optional[Any], args: Optional[Sequence]
+    ) -> Optional[Any]:
+        """
+        Call the native function with the given arguments.
+        Args:
+            input_: Input item (unused for native functions).
+            args: Arguments to the function.
+        Returns:
+            The result of the function call.
+        """
         from src.jsonata.Functions.Functions import Functions
 
         return Functions.call(self.method, self.nargs, args)
 
     def get_number_of_args(self) -> int:
+        """
+        Get the number of arguments for the native function.
+        Returns:
+            int: Number of arguments.
+        """
         return self.nargs

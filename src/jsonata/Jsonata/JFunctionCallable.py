@@ -15,4 +15,5 @@ class JFunctionCallable:
         Returns:
             The result of the function call.
         """
-        pass
+        # Should be implemented by subclasses.
+        raise NotImplementedError("Subclasses must implement call method.")

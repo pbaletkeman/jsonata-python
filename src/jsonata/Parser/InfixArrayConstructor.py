@@ -10,29 +10,35 @@ class InfixArrayConstructor(Infix):
         super().__init__(outer_instance, "[", get)
         self._outer_instance = outer_instance
 
-    def nud(self):
-        a = []
-        if self._outer_instance.node.id != "]":
-            while True:
-                item = self._outer_instance.expression(0)
-                if self._outer_instance.node.id == "..":
-                    # range operator
-                    range_symbol = Symbol(self._outer_instance)
-                    range_symbol.type = "binary"
-                    range_symbol.value = ".."
-                    range_symbol.position = self._outer_instance.node.position
-                    range_symbol.lhs = item
-                    self._outer_instance.advance("..")
-                    range_symbol.rhs = self._outer_instance.expression(0)
-                    item = range_symbol
-                a.append(item)
-                if self._outer_instance.node.id != ",":
-                    break
-                self._outer_instance.advance(",")
-        self._outer_instance.advance("]", True)
-        self.expressions = a
-        self.type = "unary"
-        return self
+        def nud(self):
+            """
+            Handles the null denotation for the array constructor operator ([ ... ]).
+            Constructs an array of expressions, supports range operator, and sets type to 'unary'.
+            Returns:
+                InfixArrayConstructor: The updated instance.
+            """
+            a = []
+            if self._outer_instance.node.id != "]":
+                while True:
+                    item = self._outer_instance.expression(0)
+                    if self._outer_instance.node.id == "..":
+                        # range operator
+                        range_symbol = Symbol(self._outer_instance)
+                        range_symbol.type = "binary"
+                        range_symbol.value = ".."
+                        range_symbol.position = self._outer_instance.node.position
+                        range_symbol.lhs = item
+                        self._outer_instance.advance("..")
+                        range_symbol.rhs = self._outer_instance.expression(0)
+                        item = range_symbol
+                    a.append(item)
+                    if self._outer_instance.node.id != ",":
+                        break
+                    self._outer_instance.advance(",")
+            self._outer_instance.advance("]", True)
+            self.expressions = a
+            self.type = "unary"
+            return self
 
     # })
 

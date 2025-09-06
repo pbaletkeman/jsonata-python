@@ -20,6 +20,14 @@ class ComparatorWrapper:
 
     def __init__(self, outer_instance, expr, environment, is_tuple_sort):
         """
+        Initialize ComparatorWrapper for sorting sequences.
+        Args:
+            outer_instance: The Jsonata instance.
+            expr: The sort expression.
+            environment: The evaluation environment.
+            is_tuple_sort: Whether sorting tuple streams.
+        """
+        """
         Initialize a ComparatorWrapper for sorting.
         Args:
             outer_instance: The Jsonata instance.
@@ -33,6 +41,16 @@ class ComparatorWrapper:
         self._is_tuple_sort = is_tuple_sort
 
     def compare(self, a, b):
+        """
+        Compare two items for sorting according to the sort expression.
+        Args:
+            a: First item to compare.
+            b: Second item to compare.
+        Returns:
+            int: -1 if a < b, 1 if a > b, 0 if equal.
+        Raises:
+            JException: If types are incompatible for sorting.
+        """
         """
         Compare two items for sorting according to the sort expression.
         Args:

@@ -24,6 +24,12 @@ class JFunction(JFunctionCallable, JFunctionSignatureValidation):
             function: The callable function implementation.
             signature: The signature string or object.
         """
+        """
+        Initialize a JFunction object.
+        Args:
+            function: The callable function implementation.
+            signature: The signature string or object.
+        """
         from src.jsonata.Signature.Signature import Signature
 
         self.function = function
@@ -45,9 +51,25 @@ class JFunction(JFunctionCallable, JFunctionSignatureValidation):
         Returns:
             The result of the function call.
         """
+        """
+        Call the function with the given input and arguments.
+        Args:
+            input_item: The input item for the function.
+            args: Arguments to the function.
+        Returns:
+            The result of the function call.
+        """
         return self.function.call(input_item, args)
 
     def validate(self, args: Optional[Any], context: Optional[Any]) -> Optional[Any]:
+        """
+        Validate the arguments against the function signature.
+        Args:
+            args: Arguments to validate.
+            context: Context for validation.
+        Returns:
+            Validated arguments or original args if no signature.
+        """
         """
         Validate the arguments against the function signature.
         Args:
@@ -62,6 +84,11 @@ class JFunction(JFunctionCallable, JFunctionSignatureValidation):
             return args
 
     def get_number_of_args(self) -> int:
+        """
+        Get the number of arguments for the function.
+        Returns:
+            The number of arguments (default 0).
+        """
         """
         Get the number of arguments for the function.
         Returns:

@@ -9,9 +9,17 @@ class InfixDefault(Infix):
         super().__init__(outer_instance, "?:", get)
         self._outer_instance = outer_instance
 
-    def led(self, left):
-        self.type = "condition"
-        self.condition = left
-        self.then = left
-        self._else = self._outer_instance.expression(0)
-        return self
+        def led(self, left):
+            """
+            Handles the left denotation for the default operator (?:).
+            Sets the type to 'condition', assigns left to condition and then, and evaluates the else branch.
+            Args:
+                left: The left operand.
+            Returns:
+                InfixDefault: The updated instance.
+            """
+            self.type = "condition"
+            self.condition = left
+            self.then = left
+            self._else = self._outer_instance.expression(0)
+            return self

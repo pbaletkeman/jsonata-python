@@ -21,9 +21,9 @@
 #
 
 import math
-from src.jsonata.Utils.JList import JList
 from typing import Any, MutableMapping, MutableSequence, Optional, Iterable
 
+from src.jsonata.Utils.JList import JList
 from src.jsonata.JException.JException import JException
 from src.jsonata.Utils.NullValue import NullValue
 
