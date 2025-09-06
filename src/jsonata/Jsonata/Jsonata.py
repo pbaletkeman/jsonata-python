@@ -1238,6 +1238,13 @@ class Jsonata:
         return result
 
     def is_function_like(self, o: Optional[Any]) -> bool:
+        """
+        Check if the object is function-like (native, lambda, or regex).
+        Args:
+            o: Object to check.
+        Returns:
+            True if function-like, False otherwise.
+        """
         return (
             Utils.is_function(o)
             or Functions.is_lambda(o)
@@ -2002,17 +2009,40 @@ class Jsonata:
             raise err
 
     def assign(self, name: str, value: Optional[Any]) -> None:
+        """
+        Assign a value to a variable in the environment.
+        Args:
+            name: Variable name.
+            value: Value to assign.
+        """
         self.environment.bind(name, value)
 
     def register_lambda(self, name: str, implementation: Callable) -> None:
+        """
+        Register a lambda function in the environment.
+        Args:
+            name: Name of the lambda.
+            implementation: Callable implementing the lambda.
+        """
         from src.jsonata.Jsonata.JLambda import JLambda
 
         self.environment.bind(name, JLambda(implementation))
 
     def register_function(self, name: str, function: Any) -> None:
+        """
+        Register a function in the environment.
+        Args:
+            name: Name of the function.
+            function: Function object to register.
+        """
         self.environment.bind(name, function)
 
     def get_errors(self) -> Optional[list[Exception]]:
+        """
+        Get the list of errors from parsing or evaluation.
+        Returns:
+            List of Exception objects or None.
+        """
         return self.errors
 
     PARSER = threading.local()

@@ -45,6 +45,11 @@ class Parser:
     # var parser = function (source, recover) {
 
     def remaining_tokens(self) -> list[Token]:
+        """
+        Get the list of remaining tokens from the lexer.
+        Returns:
+            List of Token objects.
+        """
         remaining = []
         if self.node.id != "(end)":
             t = Tokenizer.Token(self.node.type, self.node.value, self.node.position)
@@ -56,9 +61,11 @@ class Parser:
         return remaining
 
     def register(self, t: Symbol) -> None:
-
-        # if (t instanceof Infix || t instanceof InfixR) return
-
+        """
+        Register a symbol in the parser's symbol table.
+        Args:
+            t: The Symbol to register.
+        """
         s = self.symbol_table.get(t.id)
         if s is not None:
             if self.dbg:
@@ -70,7 +77,6 @@ class Parser:
                     + " -> "
                     + str(type(t))
                 )
-            # symbolTable.put(t.id, t)
             if t.bp >= s.lbp:
                 if self.dbg:
                     print(
@@ -89,13 +95,17 @@ class Parser:
             self.symbol_table[t.id] = s
 
     def handle_error(self, err: JException) -> Symbol:
+        """
+        Handle a parsing error, optionally recovering.
+        Args:
+            err: The JException to handle.
+        Returns:
+            A Symbol error node if recoverable, else raises the exception.
+        """
         if self.recover:
             err.remaining = self.remaining_tokens()
             self.errors.append(err)
-            # Symbol symbol = symbolTable.get("(error)")
             node = Parser.Symbol(self)
-            # FIXME node.error = err
-            # node.type = "(error)"
             return node
         else:
             raise err
@@ -103,10 +113,17 @@ class Parser:
     # }
 
     def advance(self, id: Optional[str] = None, infix: bool = False) -> Symbol:
+        """
+        Advance the parser to the next token, optionally checking for a specific id.
+        Args:
+            id: The expected token id.
+            infix: Whether to treat as infix.
+        Returns:
+            The next Symbol node.
+        """
         if id is not None and self.node.id != id:
             code = None
             if self.node.id == "(end)":
-                # unexpected end of buffer
                 code = "S0203"
             else:
                 code = "S0202"
@@ -135,12 +152,10 @@ class Parser:
         elif type == "regex":
             type = "regex"
             symbol = self.symbol_table["(regex)"]
-            # istanbul ignore next
         else:
             return self.handle_error(JException("S0205", next_token.position, value))
 
         self.node = symbol.create()
-        # Token node = new Token(); //Object.create(symbol)
         self.node.value = value
         self.node.type = type
         self.node.position = next_token.position
@@ -150,6 +165,13 @@ class Parser:
 
     # Pratt's algorithm
     def expression(self, rbp: int) -> Symbol:
+        """
+        Parse an expression using Pratt's algorithm.
+        Args:
+            rbp: The right binding power.
+        Returns:
+            The parsed Symbol node.
+        """
         left = None
         t = self.node
         self.advance(None, True)
@@ -183,6 +205,9 @@ class Parser:
     ancestry: MutableSequence[Symbol]
 
     def __init__(self):
+        """
+        Initialize a Parser object and register terminal symbols.
+        """
         self.dbg = False
         self.source = None
         self.recover = False

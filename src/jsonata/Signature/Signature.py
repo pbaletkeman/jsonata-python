@@ -53,6 +53,12 @@ class Signature:
     _signature: str
 
     def __init__(self, signature, function):
+        """
+        Initialize a Signature object and parse the signature string.
+        Args:
+            signature: The signature string to parse.
+            function: The function name.
+        """
         self._param = Param()
         self._params = []
         self._prev_param = self._param
@@ -63,13 +69,26 @@ class Signature:
         self.parse_signature(signature)
 
     def set_function_name(self, function_name: str) -> None:
+        """
+        Set the function name for this signature.
+        Args:
+            function_name: The function name to set.
+        """
         self.function_name = function_name
 
     def find_closing_bracket(
         self, string: str, start: int, open_symbol: str, close_symbol: str
     ) -> int:
-        # returns the position of the closing symbol (e.g. bracket) in a string
-        # that balances the opening symbol at position start
+        """
+        Find the position of the closing symbol in a string that balances the opening symbol.
+        Args:
+            string: The string to search.
+            start: The starting position of the opening symbol.
+            open_symbol: The opening symbol character.
+            close_symbol: The closing symbol character.
+        Returns:
+            The position of the closing symbol.
+        """
         depth = 1
         position = start
         while position < len(string):
@@ -85,6 +104,13 @@ class Signature:
         return position
 
     def get_symbol(self, value: Optional[Any]) -> str:
+        """
+        Get the signature symbol for a given value.
+        Args:
+            value: The value to get the symbol for.
+        Returns:
+            The symbol representing the value type.
+        """
         from src.jsonata.Functions.Functions import Functions
 
         if value is None:
@@ -115,6 +141,9 @@ class Signature:
         return symbol
 
     def next(self) -> None:
+        """
+        Advance to the next parameter in the signature.
+        """
         self._params.append(self._param)
         self._prev_param = self._param
         self._param = Param()
@@ -127,6 +156,13 @@ class Signature:
     # @returns validation pattern
     #
     def parse_signature(self, signature: str) -> Optional[re.Pattern]:
+        """
+        Parse a function signature definition and return a validation pattern.
+        Args:
+            signature: The signature string to parse.
+        Returns:
+            A regex pattern representing the signature, or None.
+        """
         # create a Regex that represents this signature and return a function that when
         # invoked,
         # returns the validated (possibly fixed-up) arguments, or throws a validation

@@ -8,6 +8,8 @@ class JList(list):
     def __init__(self, c=()):
         """
         Initialize JList and set Jsonata specific flags.
+        Args:
+            c: Iterable to initialize the list.
         """
         super().__init__(c)
         self.sequence = False

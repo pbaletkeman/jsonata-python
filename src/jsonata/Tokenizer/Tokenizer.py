@@ -106,9 +106,24 @@ class Tokenizer:
         self.length = len(path)
 
     def create(self, type: Optional[str], value: Optional[Any]) -> Token:
+        """
+        Create a Token object with the given type and value.
+        Args:
+            type: The type of the token.
+            value: The value of the token.
+        Returns:
+            A Token instance.
+        """
         return Token(type, value, self.position)
 
     def is_closing_slash(self, position: int) -> bool:
+        """
+        Check if the character at position is a closing slash for a regex.
+        Args:
+            position: Position in the path string.
+        Returns:
+            True if closing slash, False otherwise.
+        """
         if self.path[position] == "/" and self.depth == 0:
             backslash_count = 0
             while self.path[position - (backslash_count + 1)] == "\\":
@@ -118,6 +133,13 @@ class Tokenizer:
         return False
 
     def scan_regex(self) -> re.Pattern:
+        """
+        Scan and compile a regex pattern from the path string.
+        Returns:
+            A compiled regex pattern.
+        Raises:
+            JException: If the regex is invalid or not closed.
+        """
         # the prefix '/' will have been previously scanned. Find the end of the regex.
         # search for closing '/' ignoring any that are escaped, or within brackets
         start = self.position
@@ -165,6 +187,15 @@ class Tokenizer:
         raise JException("S0302", self.position)
 
     def next(self, prefix: bool) -> Optional[Token]:
+        """
+        Get the next token from the path string.
+        Args:
+            prefix: Whether to treat as prefix.
+        Returns:
+            The next Token or None if end of input.
+        Raises:
+            JException: For invalid comments or regex.
+        """
         if self.position >= self.length:
             return None
         current_char = self.path[self.position]

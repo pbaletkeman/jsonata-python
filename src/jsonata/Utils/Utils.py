@@ -50,6 +50,9 @@ class Utils:
 
     @staticmethod
     def is_array_of_strings(v: Optional[Any]) -> bool:
+        """
+        Returns True if v is a list of strings, False otherwise.
+        """
         if isinstance(v, list):
             for o in v:
                 if not isinstance(o, str):
@@ -59,6 +62,9 @@ class Utils:
 
     @staticmethod
     def is_array_of_numbers(v: Optional[Any]) -> bool:
+        """
+        Returns True if v is a list of numbers, False otherwise.
+        """
         if isinstance(v, list):
             for o in v:
                 if not Utils.is_numeric(o):
@@ -68,6 +74,9 @@ class Utils:
 
     @staticmethod
     def is_function(o: Optional[Any]) -> bool:
+        """
+        Returns True if o is a Jsonata JFunctionCallable, False otherwise.
+        """
         from src.jsonata.Jsonata.JFunctionCallable import JFunctionCallable
 
         return isinstance(o, JFunctionCallable)
@@ -76,6 +85,9 @@ class Utils:
 
     @staticmethod
     def create_sequence(el: Optional[Any] = NONE) -> list:
+        """
+        Create a Jsonata sequence from the given element.
+        """
         if el is not Utils.NONE:
             if isinstance(el, list) and len(el) == 1:
                 sequence = JList(el)
@@ -89,17 +101,25 @@ class Utils:
 
     @staticmethod
     def create_sequence_from_iter(it: Iterable) -> list:
+        """
+        Create a Jsonata sequence from an iterable.
+        """
         sequence = JList(it)
         sequence.sequence = True
         return sequence
 
     @staticmethod
     def is_sequence(result: Optional[Any]) -> bool:
+        """
+        Returns True if result is a Jsonata sequence, False otherwise.
+        """
         return isinstance(result, JList) and result.sequence
 
     @staticmethod
     def convert_number(n: float) -> Optional[float]:
-        # Use long if the number is not fractional
+        """
+        Convert a number to int if not fractional, else float.
+        """
         if not Utils.is_numeric(n):
             return None
         if int(n) == float(n):
@@ -112,10 +132,16 @@ class Utils:
 
     @staticmethod
     def convert_value(val: Optional[Any]) -> Optional[Any]:
+        """
+        Convert Jsonata NullValue to Python None.
+        """
         return val if val is not Utils.NULL_VALUE else None
 
     @staticmethod
     def convert_dict_nulls(res: MutableMapping[str, Any]) -> None:
+        """
+        Recursively convert NullValue to None in a dictionary.
+        """
         for key, val in res.items():
             v = Utils.convert_value(val)
             if v is not val:
@@ -124,6 +150,9 @@ class Utils:
 
     @staticmethod
     def convert_list_nulls(res: MutableSequence[Any]) -> None:
+        """
+        Recursively convert NullValue to None in a list.
+        """
         for i, val in enumerate(res):
             v = Utils.convert_value(val)
             if v is not val:
@@ -132,6 +161,9 @@ class Utils:
 
     @staticmethod
     def recurse(val: Optional[Any]) -> None:
+        """
+        Recursively convert NullValue to None in nested structures.
+        """
         if isinstance(val, dict):
             Utils.convert_dict_nulls(val)
         if isinstance(val, list):
@@ -139,5 +171,8 @@ class Utils:
 
     @staticmethod
     def convert_nulls(res: Optional[Any]) -> Optional[Any]:
+        """
+        Recursively convert NullValue to None in any structure.
+        """
         Utils.recurse(res)
         return Utils.convert_value(res)

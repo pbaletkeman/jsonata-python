@@ -4,39 +4,39 @@ import copy
 
 
 class Symbol:
+    """
+    Represents a symbol in the JSONata parser, supporting infix, prefix, and other operator types.
+    """
+
     @property
     def jsonata_lambda(self):
+        """
+        Property indicating if this symbol is a JSONata lambda.
+        Returns:
+            True if lambda, False otherwise.
+        """
         return self._jsonata_lambda
 
-    # Symbol s
-
-    # Procedure:
-
-    # Infix attributes
-    # where rhs = list of Symbol pairs
-    # where rhs = list of Symbols
-
-    # Ternary operator:
-
-    # processAST error handling
-
-    # Prefix attributes
-
-    # Ancestor attributes
-
     def nud(self):
-        # error - symbol has been invoked as a unary operator
+        """
+        Null denotation method (unary operator handler).
+        Returns:
+            Symbol error if recoverable, else raises JException.
+        """
         err = JException("S0211", self.position, self.value)
         if self._outer_instance.recover:
-            # err.remaining = remainingTokens()
-            # err.type = "error"
-            # errors.add(err)
-            # return err
             return Symbol("(error)")
         else:
             raise err
 
     def led(self, left):
+        """
+        Left denotation method (infix operator handler).
+        Args:
+            left: The left operand.
+        Raises:
+            NotImplementedError: Always, as this is a base class.
+        """
         raise NotImplementedError("led not implemented")
 
     _outer_instance: Optional[Any]
@@ -109,27 +109,17 @@ class Symbol:
     ancestor: "Optional[Symbol]"
 
     def __init__(self, outer_instance, symbol_id=None, bp=0):
+        """
+        Initialize a Symbol object with all attributes set to defaults.
+        Args:
+            outer_instance: The parser instance.
+            symbol_id: The symbol identifier.
+            bp: The binding power.
+        """
         self._outer_instance = outer_instance
         self.id = symbol_id
         self.value = symbol_id
         self.bp = bp
-        # use register(Symbol) ! Otherwise inheritance doesn't work
-        #            Symbol s = symbolTable.get(id)
-        #            //bp = bp != 0 ? bp : 0
-        #            if (s != null) {
-        #                if (bp >= s.lbp) {
-        #                    s.lbp = bp
-        #                }
-        #            } else {
-        #                s = new Symbol()
-        #                s.value = s.id = id
-        #                s.lbp = bp
-        #                symbolTable.put(id, s)
-        #            }
-        #
-        #
-        # return s
-
         self.type = None
         self.lbp = 0
         self.position = 0
@@ -179,13 +169,26 @@ class Symbol:
         self.ancestor = None
 
     def create(self):
-        # We want a shallow clone (do not duplicate outer class!)
+        """
+        Create a shallow clone of this Symbol.
+        Returns:
+            A shallow copy of the Symbol instance.
+        """
         cl = self.clone()
-        # System.err.println("cloning "+this+" clone="+cl)
         return cl
 
     def clone(self):
+        """
+        Return a shallow copy of this Symbol.
+        Returns:
+            A shallow copy of the Symbol instance.
+        """
         return copy.copy(self)
 
     def __repr__(self):
-        return str(type(self)) + " " + self.id + " value=" + self.value
+        """
+        Return a string representation of the Symbol.
+        Returns:
+            A string describing the Symbol instance.
+        """
+        return str(type(self)) + " " + str(self.id) + " value=" + str(self.value)

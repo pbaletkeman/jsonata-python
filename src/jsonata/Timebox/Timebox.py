@@ -45,6 +45,13 @@ class Timebox:
     depth: int
 
     def __init__(self, expr, timeout=10000, max_depth=100):
+        """
+        Initialize a Timebox to protect against runaway expressions.
+        Args:
+            expr: The expression to protect.
+            timeout: Maximum time in milliseconds.
+            max_depth: Maximum stack depth.
+        """
         self.timeout = timeout
         self.max_depth = max_depth
         self.time = Timebox.current_milli_time()
@@ -68,6 +75,11 @@ class Timebox:
         expr.set_evaluate_exit_callback(exit_callback)
 
     def check_runaway(self) -> None:
+        """
+        Check for runaway execution (stack overflow or timeout).
+        Raises:
+            JException: If stack depth or timeout exceeded.
+        """
         if self.depth > self.max_depth:
             # stack too deep
             raise JException(
@@ -77,9 +89,6 @@ class Timebox:
                 + str(self.max_depth),
                 -1,
             )
-            # stack: new Error().stack,
-            # code: "U1001"
-            # }
         if Timebox.current_milli_time() - self.time > self.timeout:
             # expression has run for too long
             raise JException(
@@ -88,10 +97,12 @@ class Timebox:
                 + "ms. Check for infinite loop",
                 -1,
             )
-            # stack: new Error().stack,
-            # code: "U1001"
-            # }
 
     @staticmethod
     def current_milli_time() -> int:
+        """
+        Get the current time in milliseconds.
+        Returns:
+            Current time in milliseconds.
+        """
         return round(time.time() * 1000)
