@@ -1,5 +1,5 @@
-from Parser.Parser import Parser
-from Parser.Symbol import Symbol
+from .Parser import Parser
+from .Symbol import Symbol
 
 
 class Terminal(Symbol):

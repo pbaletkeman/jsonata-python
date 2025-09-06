@@ -29,7 +29,7 @@
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
 
-from DateTimeUtils.SpecPart import SpecPart
+from .SpecPart import SpecPart
 
 
 class PictureFormat:

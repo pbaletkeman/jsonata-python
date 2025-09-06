@@ -30,10 +30,9 @@ import re
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from JException import JException
-from Utils.Utils import Utils
-from Tokenizer.Tokenizer import Tokenizer
-from Token import Token
+from ..JException import JException
+from ..Utils.Utils import Utils
+from .Token import Token
 
 
 class Tokenizer:
@@ -104,7 +103,7 @@ class Tokenizer:
         self.length = len(path)
 
     def create(self, type: Optional[str], value: Optional[Any]) -> Token:
-        return Tokenizer.Token(type, value, self.position)
+        return Token(type, value, self.position)
 
     def is_closing_slash(self, position: int) -> bool:
         if self.path[position] == "/" and self.depth == 0:

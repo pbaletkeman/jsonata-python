@@ -32,10 +32,10 @@
 import re
 from typing import MutableSequence, Optional, Sequence, NoReturn, Any
 
-from JException import JException
-from Utils.Utils import Utils
-from Functions import Functions
-from Signature.Param import Param
+from ..JException import JException
+from ..Utils.Utils import Utils
+from ..Functions import Functions
+from . import Param
 
 
 #
@@ -47,14 +47,14 @@ class Signature:
     signature: str
     function_name: str
 
-    _param: "Signature.Param"
-    _params: MutableSequence["Signature.Param"]
-    _prev_param: "Signature.Param"
+    _param: "Param"
+    _params: MutableSequence["Param"]
+    _prev_param: "Param"
     _regex: Optional[re.Pattern]
     _signature: str
 
     def __init__(self, signature, function):
-        self._param = Signature.Param()
+        self._param = Param()
         self._params = []
         self._prev_param = self._param
         self._regex = None
@@ -122,7 +122,7 @@ class Signature:
     def next(self) -> None:
         self._params.append(self._param)
         self._prev_param = self._param
-        self._param = Signature.Param()
+        self._param = Param()
 
     #
     # Parses a function signature definition and returns a validation function

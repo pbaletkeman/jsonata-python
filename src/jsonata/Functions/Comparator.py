@@ -1,8 +1,8 @@
 from collections.abc import Callable
 from typing import Any, Optional
 
-from Functions import Functions
-from Jsonata import Jsonata
+from .Functions import Functions
+from ..Jsonata import Jsonata
 
 
 class Comparator:

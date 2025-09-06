@@ -1,14 +1,12 @@
 from collections.abc import Callable
 from typing import Any, MutableMapping, Optional
-
-from Frame import Frame
-from Timebox import Timebox
-from Utils.Utils import Utils
+from ..Timebox import Timebox
+from ..Utils.Utils import Utils
 
 
 class Frame:
     bindings: MutableMapping[str, Any]
-    parent: Optional[Frame]
+    parent: Optional["Frame"]
     is_parallel_call: bool
 
     def __init__(self, parent):

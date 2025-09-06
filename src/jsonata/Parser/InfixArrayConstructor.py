@@ -1,6 +1,6 @@
-from Infix import Infix
-from Parser.Parser import Parser
-from Tokenizer.Tokenizer import Tokenizer
+from .Infix import Infix
+from .Parser import Parser
+from ..Tokenizer.Tokenizer import Tokenizer
 
 
 class InfixArrayConstructor(Infix):

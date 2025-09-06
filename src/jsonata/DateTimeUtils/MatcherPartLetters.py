@@ -29,8 +29,7 @@
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
 
-from DateTimeUtils.MatcherPart import MatcherPart
-from DateTimeUtils import letters_to_decimal
+from .MatcherPart import MatcherPart
 
 
 class MatcherPartLetters(MatcherPart):
@@ -41,4 +40,6 @@ class MatcherPartLetters(MatcherPart):
         self._is_upper = is_upper
 
     def parse(self, value: str) -> int:
+        from . import letters_to_decimal
+
         return letters_to_decimal(value, "A" if self._is_upper else "a")

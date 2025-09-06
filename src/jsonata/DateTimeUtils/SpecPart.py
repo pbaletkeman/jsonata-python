@@ -31,8 +31,8 @@
 
 from typing import Optional
 
-from DateTimeUtils.TCase import TCase
-from DateTimeUtils.Format import Format
+from .TCase import TCase
+from .Format import Format
 
 
 class SpecPart:

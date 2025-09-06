@@ -1,16 +1,18 @@
 from typing import Any, Optional, Sequence
-from JException.JException import JException
-from Functions import Functions
-from JFunctionCallable import JFunctionCallable
-from Frame import Frame
-from Parser.Parser import Parser
-from Utils.Utils import Utils
-from Jsonata.Jsonata import Jsonata
+
+from ..Parser import Symbol
+from ..JException import JException
+from ..Functions import Functions
+from .JFunctionCallable import JFunctionCallable
+from .Frame import Frame
+from ..Parser.Parser import Parser
+from ..Utils.Utils import Utils
+from ..Jsonata.Jsonata import Jsonata
 
 
 class Transformer(JFunctionCallable):
     _jsonata: "Jsonata"
-    _expr: Optional[Parser.Symbol]
+    _expr: Optional[Symbol]
     _environment: Optional[Frame]
 
     def __init__(self, jsonata, expr, environment):

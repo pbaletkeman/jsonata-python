@@ -29,8 +29,8 @@
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
 
-from DateTimeUtils.Format import Format
-from DateTimeUtils.MatcherPart import MatcherPart
+from .Format import Format
+from .MatcherPart import MatcherPart
 
 
 class MatcherPartDecimal(MatcherPart):

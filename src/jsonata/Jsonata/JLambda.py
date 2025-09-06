@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 from typing import Any, Callable, Optional
 
-from JFunctionCallable import JFunctionCallable
-from JFunctionSignatureValidation import JFunctionSignatureValidation
+from .JFunctionCallable import JFunctionCallable
+from .JFunctionSignatureValidation import JFunctionSignatureValidation
 
 
 class JLambda(JFunctionCallable, JFunctionSignatureValidation):

@@ -29,7 +29,7 @@
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
 
-from DateTimeUtils.MatcherPart import MatcherPart
+from .MatcherPart import MatcherPart
 
 
 class MatcherPartLookup(MatcherPart):

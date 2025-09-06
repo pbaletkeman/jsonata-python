@@ -31,9 +31,9 @@
 
 from typing import Optional
 
-from DateTimeUtils.TCase import TCase
-from DateTimeUtils.Formats import Formats
-from DateTimeUtils.GroupingSeparator import GroupingSeparator
+from .TCase import TCase
+from .Formats import Formats
+from .GroupingSeparator import GroupingSeparator
 
 
 class Format:

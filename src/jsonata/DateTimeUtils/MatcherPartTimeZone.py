@@ -29,8 +29,8 @@
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
 
-from DateTimeUtils.MatcherPart import MatcherPart
-from DateTimeUtils.SpecPart import SpecPart
+from .MatcherPart import MatcherPart
+from .SpecPart import SpecPart
 
 
 class MatcherPartTimeZone(MatcherPart):

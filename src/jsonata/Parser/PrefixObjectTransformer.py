@@ -1,5 +1,5 @@
-from Parser.Parser import Parser
-from Parser.Prefix import Prefix
+from .Parser import Parser
+from .Prefix import Prefix
 
 
 class PrefixObjectTransformer(Prefix):

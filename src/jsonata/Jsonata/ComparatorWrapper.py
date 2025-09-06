@@ -1,14 +1,15 @@
-from JException import JException
-from Jsonata.Frame import Frame
 from typing import Optional
 
-from Jsonata import Jsonata
-from Parser.Parser import Parser
+from ..JException import JException
+from .Frame import Frame
+from ..Jsonata import Jsonata
+from ..Parser.Parser import Parser
+from ..Parser.Symbol import Symbol
 
 
 class ComparatorWrapper:
     _outer_instance: "Jsonata"
-    _expr: Optional[Parser.Symbol]
+    _expr: Optional[Symbol]
     _environment: Optional[Frame]
     _is_tuple_sort: bool
 

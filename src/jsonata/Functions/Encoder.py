@@ -1,11 +1,11 @@
 import decimal
 import json
 
-from Utils.Utils import Utils
-from Functions import Functions
-from Jsonata import Jsonata
-from Parser import Parser
-from Jsonata.JFunction import JFunction
+from ..Utils.Utils import Utils
+from . import Functions
+from ..Jsonata import Jsonata
+from ..Parser import Parser
+from ..Jsonata.JFunction import JFunction
 
 
 class Encoder(json.JSONEncoder):

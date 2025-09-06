@@ -25,13 +25,14 @@
 #
 
 import copy
+from ..Tokenizer import Token
 from typing import Any, MutableSequence, Optional, Sequence
 
-from JException import JException
-from Tokenizer.Tokenizer import Tokenizer
-from Utils.Utils import Utils
-from Parser.Symbol import Symbol
-from Signature.Signature import Signature
+from ..JException import JException
+from ..Tokenizer.Tokenizer import Tokenizer
+from ..Utils.Utils import Utils
+from .Symbol import Symbol
+from ..Signature.Signature import Signature
 
 
 # var parseSignature = require('./signature')
@@ -43,7 +44,7 @@ class Parser:
 
     # var parser = function (source, recover) {
 
-    def remaining_tokens(self) -> list[Tokenizer.Token]:
+    def remaining_tokens(self) -> list[Token]:
         remaining = []
         if self.node.id != "(end)":
             t = Tokenizer.Token(self.node.type, self.node.value, self.node.position)

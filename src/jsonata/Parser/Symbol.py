@@ -1,6 +1,5 @@
 from typing import Any, MutableSequence, Optional, Sequence
-from JException.JException import JException
-from Parser.Parser import Parser
+from ..JException import JException
 
 
 class Symbol:
@@ -21,6 +20,8 @@ class Symbol:
     # Ancestor attributes
 
     def nud(self):
+        from .Parser import Parser
+
         # error - symbol has been invoked as a unary operator
         err = JException("S0211", self.position, self.value)
 

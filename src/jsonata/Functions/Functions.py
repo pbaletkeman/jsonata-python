@@ -48,16 +48,15 @@ from typing import (
     Union,
 )
 
-from JException import JException
-from Utils.Utils import Utils
-from DateTimeUtils import DateTimeUtils
-from Jsonata import Jsonata
-from Signature import Signature
+from ..JException import JException
+from ..Utils.Utils import Utils
+from ..DateTimeUtils import DateTimeUtils
+from ..Jsonata import Jsonata
+from ..Signature import Signature
 
-from Parser import Parser
-from Functions.RegexpMatch import RegexpMatch
-from Jsonata.JFunction import JFunction
-from Signature.Signature import Signature
+from ..Parser import Parser
+from ..Functions.RegexpMatch import RegexpMatch
+from ..Jsonata.JFunction import JFunction
 
 
 class Functions:

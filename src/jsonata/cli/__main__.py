@@ -26,7 +26,7 @@ import json
 import sys
 from typing import Any, Optional
 
-from Jsonata.Jsonata import Jsonata
+from Jsonata import Jsonata
 from JException import JException
 from Timebox.Timebox import Timebox
 from Functions import functions

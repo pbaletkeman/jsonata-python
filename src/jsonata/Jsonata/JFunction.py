@@ -1,19 +1,22 @@
 from typing import Any, Optional, Sequence
-from JFunctionCallable import JFunctionCallable
-from JFunctionSignatureValidation import JFunctionSignatureValidation
-from Signature import Signature as sig
+
+from .JFunctionCallable import JFunctionCallable
+from .JFunctionSignatureValidation import JFunctionSignatureValidation
 
 
 class JFunction(JFunctionCallable, JFunctionSignatureValidation):
+
     function: "JFunctionCallable"
-    signature: Optional[sig.Signature]
+    signature: Optional["Signature"]
     function_name: Optional[str]
 
     def __init__(self, function, signature):
+        from ..Signature.Signature import Signature
+
         self.function = function
         if signature is not None:
             # use classname as default, gets overwritten once the function is registered
-            self.signature = sig.Signature(signature, str(type(function)))
+            self.signature = Signature(signature, str(type(function)))
         else:
             self.signature = None
 

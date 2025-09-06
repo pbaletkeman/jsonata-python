@@ -1,5 +1,5 @@
-from Parser.Infix import Infix
-from Parser.Parser import Parser
+from .Infix import Infix
+from .Parser import Parser
 
 
 class InfixTernaryOperator(Infix):

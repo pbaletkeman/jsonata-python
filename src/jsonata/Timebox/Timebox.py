@@ -22,7 +22,7 @@
 
 import time
 
-from JException import JException
+from ..JException import JException
 
 
 #

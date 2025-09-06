@@ -1,7 +1,7 @@
-from Parser.Infix import Infix
-from Parser.Parser import Parser
-from JException.JException import JException
-from Signature import Signature
+from .Infix import Infix
+from .Parser import Parser
+from ..JException.JException import JException
+from ..Signature import Signature
 
 
 class InfixFunctionInvocation(Infix):

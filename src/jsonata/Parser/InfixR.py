@@ -1,8 +1,8 @@
 # match infix operators
 # <expression> <operator> <expression>
 # right associative
-from Parser.Parser import Parser
-from Parser.Symbol import Symbol
+from .Parser import Parser
+from .Symbol import Symbol
 
 
 class InfixR(Symbol):

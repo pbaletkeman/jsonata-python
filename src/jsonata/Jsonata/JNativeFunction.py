@@ -1,7 +1,8 @@
+import inspect
 from typing import Any, Optional, Sequence, Type
-from Functions.Functions import Functions
-from JFunction import JFunction
-from Signature.Signature import Signature
+from ..Functions.Functions import Functions
+from .JFunction import JFunction
+from ..Signature.Signature import Signature
 
 
 class JNativeFunction(JFunction):
@@ -19,8 +20,11 @@ class JNativeFunction(JFunction):
             impl_method_name = self.function_name
         self.method = Functions.get_function(clz, impl_method_name)
         self.nargs = (
-            len(signature(self.method).parameters) if self.method is not None else 0
+            len(inspect.signature(self.method).parameters)
+            if self.method is not None
+            else 0
         )
+
         if self.method is None:
             print(
                 "Function not implemented: "

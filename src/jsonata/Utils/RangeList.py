@@ -1,4 +1,4 @@
-from Utils.Utils import Utils
+from ..Utils.Utils import Utils
 
 
 class RangeList(list):

@@ -29,8 +29,7 @@
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
 
-from DateTimeUtils.MatcherPart import MatcherPart
-from DateTimeUtils import words_to_number
+from .MatcherPart import MatcherPart
 
 
 class MatcherPartWords(MatcherPart):
@@ -39,4 +38,6 @@ class MatcherPartWords(MatcherPart):
         super().__init__(regex)
 
     def parse(self, value: str) -> int:
+        from . import words_to_number
+
         return words_to_number(value.casefold())

@@ -1,6 +1,6 @@
 # match prefix operators
 # <operator> <expression>
-from Parser.Symbol import Symbol
+from .Symbol import Symbol
 
 
 class Prefix(Symbol):

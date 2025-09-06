@@ -1,7 +1,7 @@
-from JException.JException import JException
-from Parser.InfixR import InfixR
-from Parser.Parser import Parser
-from Tokenizer.Tokenizer import Tokenizer
+from ..JException.JException import JException
+from .InfixR import InfixR
+from .Parser import Parser
+from ..Tokenizer.Tokenizer import Tokenizer
 
 
 class InfixRBindVariable(InfixR):
