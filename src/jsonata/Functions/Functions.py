@@ -61,6 +61,10 @@ from src.jsonata.Jsonata.JFunction import JFunction
 
 class Functions:
     @staticmethod
+    def min(args: Optional[Sequence[float]]) -> Optional[float]:
+        return Functions.min_value(args)
+
+    @staticmethod
     def max(args: Optional[Sequence[float]]) -> Optional[float]:
         return Functions.max_value(args)
 
