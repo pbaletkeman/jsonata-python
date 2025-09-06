@@ -138,9 +138,7 @@ class Jsonata:
             elif expr.type == "regex":
                 result = self.evaluate_regex(expr)  # , input, environment);
             elif expr.type == "function":
-                result = self.evaluate_function(
-                    expr, input, environment, utils.Utils.NONE
-                )
+                result = self.evaluate_function(expr, input, environment, Utils.NONE)
             elif expr.type == "variable":
                 result = self.evaluate_variable(expr, input, environment)
             elif expr.type == "lambda":
@@ -545,7 +543,7 @@ class Jsonata:
                 raise JException("D1002", expr.position, expr.value, result)
         elif value == "[":
             # array constructor - evaluate each item
-            result = utils.Utils.JList()  # [];
+            result = Utils.JList()  # [];
             idx = 0
             for item in expr.expressions:
                 environment.is_parallel_call = idx > 0
