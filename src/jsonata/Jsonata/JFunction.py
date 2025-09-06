@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Any, Optional, Sequence
 
 from .JFunctionCallable import JFunctionCallable
@@ -22,8 +23,10 @@ class JFunction(JFunctionCallable, JFunctionSignatureValidation):
 
         self.function_name = None
 
-    def call(self, input: Optional[Any], args: Optional[Sequence]) -> Optional[Any]:
-        return self.function.call(input, args)
+    def call(
+        self, input_item: Optional[Any], args: Optional[Sequence]
+    ) -> Optional[Any]:
+        return self.function.call(input_item, args)
 
     def validate(self, args: Optional[Any], context: Optional[Any]) -> Optional[Any]:
         if self.signature is not None:

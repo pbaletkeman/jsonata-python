@@ -12,7 +12,7 @@ class Encoder(json.JSONEncoder):
     def encode(self, arg):
         if not isinstance(arg, bool) and isinstance(arg, (int, float)):
             d = decimal.Decimal(arg)
-            res = Functions.remove_exponent(d, decimal.Context(prec=15))
+            res = Functions.Functions.remove_exponent(d, decimal.Context(prec=15))
             return str(res).lower()
 
         return super().encode(arg)

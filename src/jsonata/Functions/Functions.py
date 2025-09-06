@@ -48,6 +48,10 @@ from typing import (
     Union,
 )
 
+from .Encoder import Encoder
+
+from .Comparator import Comparator
+
 from ..JException import JException
 from ..Utils.Utils import Utils
 from ..DateTimeUtils import DateTimeUtils
@@ -155,9 +159,9 @@ class Functions:
             return ""
 
         if prettify:
-            return json.dumps(arg, cls=Functions.Encoder, indent="  ")
+            return json.dumps(arg, cls=Encoder, indent="  ")
         else:
-            return json.dumps(arg, cls=Functions.Encoder, separators=(",", ":"))
+            return json.dumps(arg, cls=Encoder, separators=(",", ":"))
 
     @staticmethod
     def remove_exponent(d: decimal.Decimal, ctx: decimal.Context) -> decimal.Decimal:
@@ -537,7 +541,7 @@ class Functions:
                 groups.append(m.group(g))
                 g += 1
 
-            rm = Functions.RegexpMatch(m.group(), m.start(), groups)
+            rm = RegexpMatch(m.group(), m.start(), groups)
             rm.groups = groups
             res.append(rm)
         return res
@@ -1939,7 +1943,7 @@ class Functions:
     #
     @staticmethod
     def assert_fn(condition: Optional[bool], message: Optional[str]) -> None:
-        if condition is utils.Utils.NULL_VALUE:
+        if condition is Utils.NULL_VALUE:
             raise JException("T0410", -1)
 
         if not condition:
@@ -1995,7 +1999,7 @@ class Functions:
         result = list(arr)
 
         if comparator is not None:
-            comp = Functions.Comparator(comparator).compare
+            comp = Comparator(comparator).compare
             result = sorted(result, key=functools.cmp_to_key(comp))
         else:
             result = sorted(result)
