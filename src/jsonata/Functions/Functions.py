@@ -53,7 +53,6 @@ from src.jsonata.Functions.Encoder import Encoder
 ## Import moved inside sort to avoid circular import
 from src.jsonata.JException.JException import JException
 from src.jsonata.Utils.Utils import Utils
-from src.jsonata.DateTimeUtils import DateTimeUtils
 from src.jsonata.Parser import Parser
 from src.jsonata.Functions.RegexpMatch import RegexpMatch
 from src.jsonata.Jsonata.JFunction import JFunction
@@ -2219,6 +2218,8 @@ class Functions:
             #     ldt = java.time.LocalDate.parse(timestamp, java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             #     return ldt.atStartOfDay().atZone(java.time.ZoneId.of("UTC")).toInstant().toEpochMilli()
         else:
+            from src.jsonata.DateTimeUtils import DateTimeUtils
+
             return DateTimeUtils.DateTimeUtils.parse_datetime(timestamp, picture)
 
     # Adapted from: org.apache.commons.lang3.StringUtils
@@ -2246,6 +2247,8 @@ class Functions:
         # undefined inputs always return undefined
         if millis is None:
             return None
+        from src.jsonata.DateTimeUtils import DateTimeUtils
+
         return DateTimeUtils.DateTimeUtils.format_datetime(
             int(millis), picture, timezone
         )
@@ -2262,6 +2265,8 @@ class Functions:
     def format_integer(value: Optional[float], picture: Optional[str]) -> Optional[str]:
         if value is None:
             return None
+        from src.jsonata.DateTimeUtils import DateTimeUtils
+
         return DateTimeUtils.DateTimeUtils.format_integer(int(value), picture)
 
     #
@@ -2276,6 +2281,8 @@ class Functions:
     def parse_integer(value: Optional[str], picture: Optional[str]) -> Optional[int]:
         if value is None:
             return None
+        from src.jsonata.DateTimeUtils import DateTimeUtils
+
         return DateTimeUtils.DateTimeUtils.parse_integer(value, picture)
 
     #

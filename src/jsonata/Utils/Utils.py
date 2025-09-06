@@ -26,7 +26,6 @@ from typing import Any, MutableMapping, MutableSequence, Optional, Iterable
 
 from src.jsonata.JException.JException import JException
 from src.jsonata.Utils.NullValue import NullValue
-from src.jsonata.Jsonata.JFunctionCallable import JFunctionCallable
 
 
 class Utils:
@@ -66,6 +65,7 @@ class Utils:
 
     @staticmethod
     def is_function(o: Optional[Any]) -> bool:
+        from src.jsonata.Jsonata.JFunctionCallable import JFunctionCallable
 
         return isinstance(o, JFunctionCallable)
 
