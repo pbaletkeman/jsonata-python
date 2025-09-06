@@ -57,7 +57,7 @@ from src.jsonata.Jsonata.JNativeFunction import JNativeFunction
 from src.jsonata.Parser.Symbol import Symbol
 from src.jsonata.JException.JException import JException
 from src.jsonata.Timebox.Timebox import Timebox
-from src.jsonata.Utils.Utils import Utils
+from src.jsonata.Utils.Utils import Utils, JList
 from src.jsonata.Functions.Functions import Functions
 from src.jsonata.Jsonata.Frame import Frame
 from src.jsonata.Jsonata.JFunction import JFunction
@@ -180,11 +180,7 @@ class Jsonata:
             exit_callback(expr, input_item, environment, result)
 
         # mangle result (list of 1 element -> 1 element, empty list -> null)
-        if (
-            result is not None
-            and Utils.Utils.is_sequence(result)
-            and not result.tuple_stream
-        ):
+        if result is not None and Utils.is_sequence(result) and not result.tuple_stream:
             if expr.keep_array:
                 result.keep_singleton = True
             if not result:
@@ -259,12 +255,12 @@ class Jsonata:
         if expr.keep_singleton_array:
 
             # If we only got an ArrayList, convert it so we can set the keepSingleton flag
-            if not (isinstance(result_sequence, Utils.JList)):
-                result_sequence = Utils.JList(result_sequence)
+            if not (isinstance(result_sequence, JList)):
+                result_sequence = JList(result_sequence)
 
             # if the array is explicitly constructed in the expression and marked to promote singleton sequences to array
             if (
-                (isinstance(result_sequence, Utils.JList))
+                (isinstance(result_sequence, JList))
                 and result_sequence.cons
                 and not result_sequence.sequence
             ):
@@ -281,38 +277,38 @@ class Jsonata:
         return result_sequence
 
     def create_frame_from_tuple(
-        self, environment: Optional[Frame], tuple: Optional[Mapping[str, Any]]
+        self, environment: Optional[Frame], tuple_data: Optional[Mapping[str, Any]]
     ) -> Frame:
         frame = self.create_frame(environment)
-        if tuple is not None:
-            for prop, val in tuple.items():
+        if tuple_data is not None:
+            for prop, val in tuple_data.items():
                 frame.bind(prop, val)
         return frame
 
     def evaluate_step(
         self,
         expr: Symbol,
-        input: Optional[Any],
+        input_item: Optional[Any],
         environment: Optional[Frame],
         last_step: bool,
     ) -> Optional[Any]:
         """
         Evaluate a step within a path
         @param expr: JSONata expression
-        @param input: Input data to evaluate against
+        @param input_item: Input data to evaluate against
         @param environment: Environment
         @param last_step: flag the last step in a path
         @returns: Evaluated input data
         """
         if expr.type == "sort":
-            result = self.evaluate_sort_expression(expr, input, environment)
+            result = self.evaluate_sort_expression(expr, input_item, environment)
             if expr.stages is not None:
                 result = self.evaluate_stages(expr.stages, result, environment)
             return result
 
         result = Utils.create_sequence()
 
-        for inp in input:
+        for inp in input_item:
             res = self.eval(expr, inp, environment)
             if expr.stages is not None:
                 for stage in expr.stages:
@@ -438,7 +434,7 @@ class Jsonata:
         @returns: Result after applying predicates
         """
         results = Utils.create_sequence()
-        if isinstance(input_item, Utils.JList) and input_item.tuple_stream:
+        if isinstance(input_item, JList) and input_item.tuple_stream:
             results.tuple_stream = True
         if not (isinstance(input_item, list)):
             input_item = Utils.create_sequence(input_item)
@@ -1150,7 +1146,7 @@ class Jsonata:
         lhs = input_item
         is_tuple_sort = (
             True
-            if (isinstance(input_item, Utils.JList) and input.tuple_stream)
+            if (isinstance(input_item, Utils.JList) and input_item.tuple_stream)
             else False
         )
 

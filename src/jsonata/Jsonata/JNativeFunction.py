@@ -34,10 +34,9 @@ class JNativeFunction(JFunction):
                 + impl_method_name
             )
 
-    def call(self, input_: Optional[Any], args: Optional[Sequence]) -> Optional[Any]:
+    def call(self, args: Optional[Sequence]) -> Optional[Any]:
         from src.jsonata.Functions.Functions import Functions
 
-        # input_ is unused, but kept for signature compatibility
         return Functions.call(self.method, self.nargs, args)
 
     def get_number_of_args(self) -> int:
