@@ -20,6 +20,14 @@
 #   Licensed under the Apache License, Version 2.0 (the "License")
 #
 
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+JException module for Jsonata Python implementation.
+Defines custom exception classes for error handling in Jsonata expressions, including error codes and message formatting.
+"""
+
+
 import re
 
 from typing import Any, Optional

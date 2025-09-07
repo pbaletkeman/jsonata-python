@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+This module defines the InfixAndPrefix class for handling operators that support both infix and prefix notation in the Jsonata parser.
+It provides logic for parsing and cloning such operators, integrating with the parser's infix and prefix framework.
+"""
+
+
 from src.jsonata.Parser.Infix import Infix
 from typing import Optional, Any
 

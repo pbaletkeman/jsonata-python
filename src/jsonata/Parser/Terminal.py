@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+Terminal module for Jsonata Python implementation.
+Defines the Terminal class for terminal symbols in the Jsonata parser, representing tokens without further denotation.
+"""
+
+
 from src.jsonata.Parser.Symbol import Symbol
 
 

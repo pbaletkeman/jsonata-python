@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+InfixOrderBy module for Jsonata Python implementation.
+Defines the InfixOrderBy and InfixParentOperator classes for sorting and parent context operators in the Jsonata parser.
+"""
+
+
 from src.jsonata.Parser.Symbol import Symbol
 from src.jsonata.Parser.Infix import Infix
 from src.jsonata.Parser.Parser import Parser

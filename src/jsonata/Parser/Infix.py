@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+This module defines the Infix class for handling infix operators in the Jsonata parser.
+It provides logic for parsing left-associative binary expressions and integrating with the parser's symbol and tokenizer framework.
+"""
+
+
 # match infix operators
 # <expression> <operator> <expression>
 # left associative

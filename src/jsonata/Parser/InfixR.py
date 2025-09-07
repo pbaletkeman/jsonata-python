@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+InfixR module for Jsonata Python implementation.
+Defines the InfixR class for right-associative infix operators in the Jsonata parser.
+"""
+
+
 # match infix operators
 # <expression> <operator> <expression>
 # right associative

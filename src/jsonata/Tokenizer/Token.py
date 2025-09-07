@@ -1,3 +1,10 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+This module defines the Token dataclass for representing tokens in the JSONata tokenizer.
+It provides attributes for token type, value, position, and identifier, supporting lexical analysis in the parser framework.
+"""
+
 from dataclasses import dataclass
 from typing import Any, Optional
 

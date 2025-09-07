@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+InfixRBindVariable module for Jsonata Python implementation.
+Defines the InfixRBindVariable class for right-associative bind variable operators in the Jsonata parser.
+"""
+
+
 from src.jsonata.JException.JException import JException
 from src.jsonata.Parser.InfixR import InfixR
 from src.jsonata.Parser.Parser import Parser

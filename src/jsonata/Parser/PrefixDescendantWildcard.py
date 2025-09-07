@@ -1,3 +1,5 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
 """
 PrefixDescendantWildcard module for JSONata Python implementation.
 Handles the prefix descendant wildcard operator (**), enabling matching of all descendant fields in JSONata expressions.

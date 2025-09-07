@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+JFunctionCallable module for Jsonata Python implementation.
+Defines the JFunctionCallable interface for callable JSONata functions.
+"""
+
+
 from typing import Any, Optional, Sequence
 
 

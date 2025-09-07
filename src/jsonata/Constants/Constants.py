@@ -1,4 +1,5 @@
 ﻿#
+#
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -19,6 +20,13 @@
 #   Copyright Dashjoin GmbH. https://dashjoin.com
 #   Licensed under the Apache License, Version 2.0 (the "License")
 #
+
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+Constants module for Jsonata Python implementation.
+Defines constant values used throughout the Jsonata library, including error codes, default settings, and configuration flags.
+"""
 
 
 #

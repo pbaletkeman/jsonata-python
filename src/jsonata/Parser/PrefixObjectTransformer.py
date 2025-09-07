@@ -1,3 +1,5 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
 """
 PrefixObjectTransformer module for JSONata Python implementation.
 Handles the prefix object transformer operator (|), enabling object transformation, updates, and deletions in JSONata expressions.

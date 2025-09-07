@@ -1,8 +1,4 @@
 ﻿#
-"""
-Jsonata Python implementation: Main engine for evaluating and transforming JSONata expressions.
-Provides core logic for query, transformation, grouping, sorting, filtering, and advanced expression features.
-"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -27,6 +23,13 @@ Provides core logic for query, transformation, grouping, sorting, filtering, and
 # © Copyright IBM Corp. 2016, 2017 All Rights Reserved
 #   This project is licensed under the MIT License, see LICENSE
 #
+
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+Jsonata Python implementation: Main engine for evaluating and transforming JSONata expressions.
+Provides core logic for query, transformation, grouping, sorting, filtering, and advanced expression features.
+"""
 
 import copy
 import inspect

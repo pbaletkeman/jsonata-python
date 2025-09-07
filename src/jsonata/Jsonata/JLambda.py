@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+JLambda module for Jsonata Python implementation.
+Defines the JLambda class for JSONata lambda functions with signature validation and callable interface.
+"""
+
+
 from collections.abc import Sequence
 from typing import Any, Callable, Optional
 

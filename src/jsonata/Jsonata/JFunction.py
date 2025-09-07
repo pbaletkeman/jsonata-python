@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+JFunction module for Jsonata Python implementation.
+Defines the JFunction class for JSONata functions with signature validation and callable interface.
+"""
+
+
 from __future__ import annotations
 from typing import Any, Optional, Sequence
 

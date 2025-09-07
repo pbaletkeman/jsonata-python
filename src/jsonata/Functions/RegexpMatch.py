@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+RegexpMatch module for Jsonata Python implementation.
+Defines the RegexpMatch dataclass, representing the result of a regular expression match, including the matched substring, index, and captured groups.
+"""
+
+
 from dataclasses import dataclass
 from typing import AnyStr, Sequence
 

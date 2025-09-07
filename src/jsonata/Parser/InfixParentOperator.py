@@ -1,3 +1,10 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+InfixParentOperator module for Jsonata Python implementation.
+Defines the InfixParentOperator class for parent context operators in the Jsonata parser.
+"""
+
 from src.jsonata.Parser.Infix import Infix
 from src.jsonata.Parser.Parser import Parser
 

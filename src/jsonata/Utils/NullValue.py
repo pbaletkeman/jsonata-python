@@ -1,3 +1,5 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
 """
 NullValue module for Jsonata Python implementation.
 Defines the NullValue class, representing a JSONata null value.

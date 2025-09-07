@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+This module defines the InfixCoalesce class for handling the coalesce (??) operator in the Jsonata parser.
+It provides logic for conditional coalescing of values, integrating with the parser's symbol and infix framework.
+"""
+
+
 from src.jsonata.Parser.Infix import Infix
 from src.jsonata.Parser.Symbol import Symbol
 

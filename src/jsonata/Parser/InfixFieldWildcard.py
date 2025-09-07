@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+InfixFieldWildcard module for Jsonata Python implementation.
+Defines the InfixFieldWildcard class for field wildcard operators in the Jsonata parser.
+"""
+
+
 from src.jsonata.Parser.Infix import Infix
 from src.jsonata.Parser.Parser import Parser
 

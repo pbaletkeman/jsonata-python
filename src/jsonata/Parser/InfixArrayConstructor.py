@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+This module defines the InfixArrayConstructor class for handling array construction ([ ... ]) in the Jsonata parser.
+It provides logic for building arrays, supporting range operators, filtering, and array indexing within the parser framework.
+"""
+
+
 from src.jsonata.Parser.Infix import Infix
 from src.jsonata.Parser.Symbol import Symbol
 from src.jsonata.Tokenizer.Tokenizer import Tokenizer

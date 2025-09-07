@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+InfixRError module for Jsonata Python implementation.
+Defines the InfixRError class for representing error operators in the Jsonata parser.
+"""
+
+
 from src.jsonata.Parser.Infix import Infix
 from src.jsonata.Parser.Parser import Parser
 

@@ -1,3 +1,5 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
 """
 Prefix module for JSONata Python implementation.
 Handles prefix operators (e.g., -x, !x) in JSONata expressions, providing parsing logic for unary operations.

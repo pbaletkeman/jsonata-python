@@ -1,10 +1,4 @@
 #
-"""
-jsonata.cli.__main__
-
-Entry point for the Pure Python JSONata command-line interface (CLI).
-Provides argument parsing, evaluation, and error handling for JSONata expressions.
-"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -25,6 +19,15 @@ Provides argument parsing, evaluation, and error handling for JSONata expression
 #   Copyright Dashjoin GmbH. https://dashjoin.com
 #   Licensed under the Apache License, Version 2.0 (the "License")
 #
+
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+jsonata.cli.__main__
+
+Entry point for the Pure Python JSONata command-line interface (CLI).
+Provides argument parsing, evaluation, and error handling for JSONata expressions.
+"""
 
 import argparse
 import cmd

@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+This module defines the Param class for representing parameters in function signatures for the JSONata parser.
+It provides attributes and methods for parameter type, regex, context, array status, and subtype, supporting signature validation.
+"""
+
+
 from typing import Optional
 
 

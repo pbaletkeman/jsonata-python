@@ -1,9 +1,3 @@
-#
-"""
-TCase module for JSONata Python implementation.
-Defines enumeration for string case formatting (upper, lower, title) in JSONata expressions.
-Adapted from jsonata-java and JSONata4Java projects.
-"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -33,6 +27,15 @@ Adapted from jsonata-java and JSONata4Java projects.
 #   +1 914 499 1900
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
+
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+TCase module for JSONata Python implementation.
+Defines enumeration for string case formatting (upper, lower, title) in JSONata expressions.
+Adapted from jsonata-java and JSONata4Java projects.
+"""
+
 
 from enum import Enum
 

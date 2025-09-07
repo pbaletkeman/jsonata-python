@@ -1,9 +1,3 @@
-#
-"""
-PictureMatcher module for JSONata Python implementation.
-Provides utilities for matching and parsing date/time picture formats in JSONata expressions.
-Adapted from jsonata-java and JSONata4Java projects.
-"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -33,6 +27,15 @@ Adapted from jsonata-java and JSONata4Java projects.
 #   +1 914 499 1900
 #   support: Nathaniel Mills wnm3@us.ibm.com
 #
+
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+PictureMatcher module for JSONata Python implementation.
+Provides utilities for matching and parsing date/time picture formats in JSONata expressions.
+Adapted from jsonata-java and JSONata4Java projects.
+"""
+
 
 from src.jsonata.DateTimeUtils.MatcherPart import MatcherPart
 

@@ -1,6 +1,14 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+Symbol module for Jsonata Python implementation.
+Defines the Symbol class for representing symbols in the JSONata parser, supporting infix, prefix, and other operator types.
+"""
+
+import copy
+
 from typing import Any, MutableSequence, Optional, Sequence
 from src.jsonata.JException.JException import JException
-import copy
 
 
 class Symbol:

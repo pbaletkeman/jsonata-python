@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+This module defines the InfixAnd class for handling the 'and' infix operator in the Jsonata parser.
+It allows 'and' to be used as both an infix and terminal symbol within the parser framework.
+"""
+
+
 from src.jsonata.Parser.Infix import Infix
 from src.jsonata.Parser.Parser import Parser
 

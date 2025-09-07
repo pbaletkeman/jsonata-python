@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+InfixTernaryOperator module for Jsonata Python implementation.
+Defines the InfixTernaryOperator class for handling ternary conditional expressions in the Jsonata parser.
+"""
+
+
 from src.jsonata.Parser.Infix import Infix
 from src.jsonata.Parser.Parser import Parser
 

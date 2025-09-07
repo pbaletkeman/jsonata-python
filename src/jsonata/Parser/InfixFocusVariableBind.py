@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+InfixFocusVariableBind module for Jsonata Python implementation.
+Defines the InfixFocusVariableBind class for focus variable bind operators in the Jsonata parser.
+"""
+
+
 from src.jsonata.Parser.Infix import Infix
 from src.jsonata.Parser.Parser import Parser
 from src.jsonata.JException.JException import JException

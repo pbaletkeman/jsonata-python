@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+GroupEntry module for Jsonata Python implementation.
+Defines the GroupEntry dataclass for grouping operations in Jsonata expressions.
+"""
+
+
 from dataclasses import dataclass
 from typing import Any, Optional
 

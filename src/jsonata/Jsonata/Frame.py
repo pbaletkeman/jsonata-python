@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+Frame module for Jsonata Python implementation.
+Defines the Frame class for environment frames, variable bindings, and scope management in Jsonata expressions.
+"""
+
+
 from collections.abc import Callable
 from typing import Any, MutableMapping, Optional
 from src.jsonata.Timebox.Timebox import Timebox

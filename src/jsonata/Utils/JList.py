@@ -1,3 +1,5 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
 """
 JList module for Jsonata Python implementation.
 Defines the JList class, a specialized list with flags for Jsonata evaluation semantics.

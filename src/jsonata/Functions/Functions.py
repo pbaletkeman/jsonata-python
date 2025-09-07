@@ -1,7 +1,4 @@
 ﻿#
-"""
-Jsonata Python implementation: Utility functions for expressions, string, math, and data manipulation.
-"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -24,6 +21,13 @@ Jsonata Python implementation: Utility functions for expressions, string, math, 
 #   Project name: elementpath
 #   Copyright (c), 2018-2021, SISSA (Scuola Internazionale Superiore di Studi Avanzati)
 #   This project is licensed under the MIT License, see LICENSE
+
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+Jsonata Python implementation: Utility functions for expressions, string, math, and data manipulation.
+"""
+
 
 import base64
 import builtins
@@ -986,7 +990,8 @@ class Functions:
             return result
 
         if callable(replacement):
-            replacer = lambda m: replacement(m.groupdict())
+            def replacer(m):
+                return replacement(m.groupdict())
         elif isinstance(replacement, str):
             replacer = string_replacer
         else:
@@ -2410,9 +2415,9 @@ class Functions:
             return arg1
 
         # if either argument is not an array, make it so
-        if not (isinstance(arg1, list)):
+        if not isinstance(arg1, list):
             arg1 = Utils.create_sequence(arg1)
-        if not (isinstance(arg2, list)):
+        if not isinstance(arg2, list):
             arg2 = JList([arg2])
         return arg1 + arg2
 

@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+InfixObjectConstructor module for Jsonata Python implementation.
+Defines the InfixObjectConstructor class for object construction operators in the Jsonata parser.
+"""
+
+
 from src.jsonata.Parser.Infix import Infix
 from src.jsonata.Parser.Parser import Parser
 

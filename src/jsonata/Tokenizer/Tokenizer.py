@@ -1,9 +1,4 @@
 ﻿#
-"""
-Tokenizer module for JSONata Python implementation.
-Provides lexical analysis for JSONata expressions, converting input strings into tokens for parsing.
-Adapted from jsonata-java and IBM JSONata projects.
-"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -29,6 +24,14 @@ Adapted from jsonata-java and IBM JSONata projects.
 # © Copyright IBM Corp. 2016, 2018 All Rights Reserved
 #   This project is licensed under the MIT License, see LICENSE
 #
+
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+Tokenizer module for JSONata Python implementation.
+Provides lexical analysis for JSONata expressions, converting input strings into tokens for parsing.
+Adapted from jsonata-java and IBM JSONata projects.
+"""
 
 import math
 import re

@@ -1,3 +1,10 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+JNativeFunction module for Jsonata Python implementation.
+Defines the JNativeFunction class for wrapping native Python implementations and signatures in Jsonata.
+"""
+
 import inspect
 from typing import Any, Optional, Sequence
 from src.jsonata.Jsonata.JFunction import JFunction

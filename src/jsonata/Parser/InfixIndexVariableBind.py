@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+InfixIndexVariableBind module for Jsonata Python implementation.
+Defines the InfixIndexVariableBind class for index variable bind operators in the Jsonata parser.
+"""
+
+
 from src.jsonata.JException.JException import JException
 from src.jsonata.Parser.Infix import Infix
 from src.jsonata.Tokenizer.Tokenizer import Tokenizer

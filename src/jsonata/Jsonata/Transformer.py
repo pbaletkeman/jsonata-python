@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+Transformer module for Jsonata Python implementation.
+Defines the Transformer class for object transformation operations in Jsonata expressions.
+"""
+
+
 from typing import Any, Optional, Sequence, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -53,14 +61,14 @@ class Transformer(JFunctionCallable):
 
         matches = self._jsonata.eval(self._expr.pattern, result, self._environment)
         if matches is not None:
-            if not (isinstance(matches, list)):
+            if not isinstance(matches, list):
                 matches = [matches]
             for match_ in matches:
                 update = self._jsonata.eval(
                     self._expr.update, match_, self._environment
                 )
                 if update is not None:
-                    if not (isinstance(update, dict)):
+                    if not isinstance(update, dict):
                         raise JException("T2011", self._expr.update.position, update)
                     for k in update.keys():
                         match_[k] = update[k]
@@ -71,7 +79,7 @@ class Transformer(JFunctionCallable):
                     )
                     if deletions is not None:
                         val = deletions
-                        if not (isinstance(deletions, list)):
+                        if not isinstance(deletions, list):
                             deletions = [deletions]
                         if not Utils.is_array_of_strings(deletions):
                             raise JException("T2012", self._expr.delete.position, val)

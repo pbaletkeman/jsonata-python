@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+JFunctionSignatureValidation module for Jsonata Python implementation.
+Defines the JFunctionSignatureValidation interface for validating function signatures in JSONata.
+"""
+
+
 from typing import Any, Optional
 
 

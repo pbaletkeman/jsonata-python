@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+ComparatorWrapper module for Jsonata Python implementation.
+Defines the ComparatorWrapper class for sorting sequences in Jsonata, supporting tuple and non-tuple sorts.
+"""
+
+
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:

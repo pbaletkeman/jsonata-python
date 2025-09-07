@@ -18,7 +18,15 @@
 #   Project name: jsonata-java
 #   Copyright Dashjoin GmbH. https://dashjoin.com
 #   Licensed under the Apache License, Version 2.0 (the "License")
+
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+This module provides utility functions and classes for the Jsonata Python implementation.
+It includes helpers for type checking, sequence creation, number conversion, and recursive null handling, supporting the parser and evaluation framework.
+"""
 #
+
 
 import math
 from typing import Any, MutableMapping, MutableSequence, Optional, Iterable

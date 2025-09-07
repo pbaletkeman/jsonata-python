@@ -1,9 +1,4 @@
 ﻿#
-"""
-Parser module for JSONata Python implementation.
-Handles parsing of JSONata expressions, including infix, prefix, and function operators.
-Adapted from jsonata-java and IBM JSONata projects, supporting advanced query and transformation syntax.
-"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -28,6 +23,13 @@ Adapted from jsonata-java and IBM JSONata projects, supporting advanced query an
 # © Copyright IBM Corp. 2016, 2018 All Rights Reserved
 #   This project is licensed under the MIT License, see LICENSE
 #
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+Parser module for JSONata Python implementation.
+Handles parsing of JSONata expressions, including infix, prefix, and function operators.
+Adapted from jsonata-java and IBM JSONata projects, supporting advanced query and transformation syntax.
+"""
 
 import copy
 from src.jsonata.Parser.Prefix import Prefix

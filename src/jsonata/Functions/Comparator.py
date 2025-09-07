@@ -1,7 +1,10 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
 """
 Comparator module for JSONata Python implementation.
 Provides utilities for wrapping comparator functions or objects, enabling sorting and grouping in JSONata expressions.
 """
+
 
 from collections.abc import Callable
 from typing import Any, Optional

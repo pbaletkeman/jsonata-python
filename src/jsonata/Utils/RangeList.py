@@ -1,3 +1,11 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+
+"""
+This module defines the RangeList class for representing inclusive integer ranges in the Jsonata Python implementation.
+It provides list-like behavior for ranges, supporting indexing, iteration, and length operations for use in expressions.
+"""
+
+
 from src.jsonata.Utils.Utils import Utils
 
 
