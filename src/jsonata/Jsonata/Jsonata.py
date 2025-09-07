@@ -30,15 +30,6 @@ import math
 import re
 import threading
 import sys
-import copy
-import inspect
-import math
-import re
-import typing
-import math
-import re
-import math
-import re
 
 from dataclasses import dataclass
 from typing import (
@@ -1342,7 +1333,7 @@ class Jsonata:
             raise JException("T1006", expr.position, proc_name)
 
         try:
-            if isinstance(proc, Parser.Symbol):
+            if isinstance(proc, Symbol):
                 proc.token = proc_name
                 proc.position = expr.position
             result = self.apply(proc, evaluated_args, input_item, environment)
@@ -1383,9 +1374,9 @@ class Jsonata:
                 result.body.procedure, result.input_item, result.environment
             )
             if result.body.procedure.type == "variable":
-                if isinstance(next, Parser.Symbol):  # Java: not if JFunction
+                if isinstance(next, Symbol):  # Java: not if JFunction
                     next.token = result.body.procedure.value
-            if isinstance(next, Parser.Symbol):  # Java: not if JFunction
+            if isinstance(next, Symbol):  # Java: not if JFunction
                 next.position = result.body.procedure.position
             evaluated_args = []
             for arg in result.body.arguments:
@@ -1592,7 +1583,7 @@ class Jsonata:
             if i >= len(args):
                 break
             env.bind(str(arg.value), args[i])
-        if isinstance(proc.body, Parser.Symbol):
+        if isinstance(proc.body, Symbol):
             result = self.eval(proc.body, proc.input, env)
         else:
             raise RuntimeError("Cannot execute procedure: " + proc + " " + proc.body)

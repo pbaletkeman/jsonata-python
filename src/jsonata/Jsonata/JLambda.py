@@ -22,9 +22,7 @@ class JLambda(JFunctionCallable, JFunctionSignatureValidation):
         """
         self.function = function
 
-    def call(
-        self, input_: Optional[Any], args: Optional[Sequence]
-    ) -> Optional[Any]:
+    def call(self, input_: Optional[Any], args: Optional[Sequence]) -> Optional[Any]:
         """
         Call the lambda function with the given input and arguments.
         Args:

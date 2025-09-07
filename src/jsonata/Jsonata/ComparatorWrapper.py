@@ -27,14 +27,6 @@ class ComparatorWrapper:
             environment: The evaluation environment.
             is_tuple_sort: Whether sorting tuple streams.
         """
-        """
-        Initialize a ComparatorWrapper for sorting.
-        Args:
-            outer_instance: The Jsonata instance.
-            expr: The sort expression.
-            environment: The evaluation environment.
-            is_tuple_sort: Whether sorting tuple streams.
-        """
         self._outer_instance = outer_instance
         self._expr = expr
         self._environment = environment
@@ -48,16 +40,6 @@ class ComparatorWrapper:
             b: Second item to compare.
         Returns:
             int: -1 if a < b, 1 if a > b, 0 if equal.
-        Raises:
-            JException: If types are incompatible for sorting.
-        """
-        """
-        Compare two items for sorting according to the sort expression.
-        Args:
-            a: First item to compare.
-            b: Second item to compare.
-        Returns:
-            -1 if a < b, 1 if a > b, 0 if equal.
         Raises:
             JException: If types are incompatible for sorting.
         """

@@ -315,12 +315,10 @@ class DateTimeUtils:
         return "".join(letters)
 
     @staticmethod
-    @staticmethod
     def format_integer(value: int, picture: Optional[str]) -> str:
         fmt = DateTimeUtils._analyse_integer_picture(picture)
         return DateTimeUtils._format_integer(value, fmt)
 
-    @staticmethod
     @staticmethod
     def parse_integer(value: Optional[str], picture: Optional[str]) -> Optional[int]:
         format_spec = DateTimeUtils._analyse_integer_picture(picture)
@@ -723,7 +721,6 @@ class DateTimeUtils:
     _iso8601_spec = None
 
     @staticmethod
-    @staticmethod
     def format_datetime(
         millis: int, picture: Optional[str], timezone: Optional[str]
     ) -> str:
@@ -968,7 +965,6 @@ class DateTimeUtils:
     def delta_weeks(start: datetime.date, end: datetime.date) -> int:
         return int((end - start).total_seconds() / (7 * 24 * 60 * 60) + 1)
 
-    @staticmethod
     @staticmethod
     def parse_datetime(timestamp: Optional[str], picture: str) -> Optional[int]:
         format_spec = DateTimeUtils._analyse_datetime_picture(picture)
