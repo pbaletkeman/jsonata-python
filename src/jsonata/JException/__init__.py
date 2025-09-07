@@ -1,3 +1,8 @@
+"""
+JException subpackage initialization for Jsonata Python implementation.
+Imports all exception modules for error handling.
+"""
+
 import os
 import glob
 

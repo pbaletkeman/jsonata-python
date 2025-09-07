@@ -1,3 +1,8 @@
+"""
+PrefixDescendantWildcard module for JSONata Python implementation.
+Handles the prefix descendant wildcard operator (**), enabling matching of all descendant fields in JSONata expressions.
+"""
+
 from src.jsonata.Parser.Prefix import Prefix
 from src.jsonata.Parser.Parser import Parser
 

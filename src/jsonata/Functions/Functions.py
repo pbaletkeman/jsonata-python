@@ -8,7 +8,6 @@ Jsonata Python implementation: Utility functions for expressions, string, math, 
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,6 +26,7 @@ Jsonata Python implementation: Utility functions for expressions, string, math, 
 #   This project is licensed under the MIT License, see LICENSE
 
 import base64
+import builtins
 import datetime
 import decimal
 import functools
@@ -69,122 +69,172 @@ class Functions:
     @staticmethod
     def min(args: Optional[Sequence[float]]) -> Optional[float]:
         """
-        Return the minimum value in a sequence.
+        Returns the minimum value in a sequence of floats.
         Args:
-            args (Optional[Sequence[float]]): Sequence of numbers.
+            args (Optional[Sequence[float]]): Sequence of float values.
         Returns:
-            Optional[float]: Minimum value or None.
+            Optional[float]: Minimum value or None if input is None.
         """
-        return Functions.min_value(args)
+        if args is None or len(args) == 0:
+            return None
+        return min(args)
 
     @staticmethod
-    def max(args: Optional[Sequence[float]]) -> Optional[float]:
+    def pow(arg: Optional[float], exp: Optional[float]) -> Optional[float]:
         """
-        Return the maximum value in a sequence.
+        Raises a number to the power of the second number.
         Args:
-            args (Optional[Sequence[float]]): Sequence of numbers.
+            arg (Optional[float]): The base number.
+            exp (Optional[float]): The exponent.
         Returns:
-            Optional[float]: Maximum value or None.
+            Optional[float]: Result of base raised to exponent, or None if input is None.
         """
-        return Functions.max_value(args)
-
-    #
-    # Sum function
-    # @param {Object} args - Arguments
-    # @returns {number} Total value of arguments
-    #
-    @staticmethod
-    def sum(args: Optional[Sequence[float]]) -> Optional[float]:
-        # undefined inputs always return undefined
-        if args is None:
+        if arg is None or exp is None:
+            return None
+        try:
+            return math.pow(arg, exp)
+        except Exception as exc:
+            logging.error("Exception in pow calculation: %s", exc)
             return None
 
-        return sum(args)
-
-    #
-    # Count function
-    # @param {Object} args - Arguments
-    # @returns {number} Number of elements in the array
-    #
     @staticmethod
-    def count(args: Optional[Sequence[Any]]) -> float:
-        # undefined inputs always return undefined
-        if args is None:
-            return 0
+    def lookup(
+        input_: Union[Mapping, Optional[Sequence]], key: Optional[str]
+    ) -> Optional[Any]:
+        """
+        Returns the value from an object for a given key. Handles nested lists and dicts.
+        Args:
+            input_ (Union[Mapping, Optional[Sequence]]): Object or array to search.
+            key (Optional[str]): Key to look up.
+        Returns:
+            Optional[Any]: Value of key in object or None if not found.
+        """
+        result = None
+        if isinstance(input_, list):
+            result = Utils.create_sequence()
+            for inp in input_:
+                res = Functions.lookup(inp, key)
+                if res is not None:
+                    if isinstance(res, list):
+                        result.extend(res)
+                    else:
+                        result.append(res)
+        elif isinstance(input_, dict):
+            result = input_.get(key, Utils.NONE)
+            if result is None and isinstance(input_, dict) and key in input_:
+                result = Utils.NULL_VALUE
+            elif result is Utils.NONE:
+                result = None
+        return result
 
-        return len(args)
-
-    #
-    # Max function
-    # @param {Object} args - Arguments
-    # @returns {number} Max element in the array
-    #
     @staticmethod
-    def max_value(args: Optional[Sequence[float]]) -> Optional[float]:
-        # undefined inputs always return undefined
-        if args is None or not args:
+    def test(a: Optional[str], b: Optional[str]) -> str:
+        """
+        Concatenates two strings.
+        Args:
+            a (Optional[str]): First string.
+            b (Optional[str]): Second string.
+        Returns:
+            str: Concatenated result.
+        """
+        return a + b
+
+    @staticmethod
+    def get_function(clz: Optional[Type], name: Optional[str]) -> Optional[Any]:
+        """
+        Gets a function by name from a class.
+        Args:
+            clz (Optional[Type]): Class to search.
+            name (Optional[str]): Name of function.
+        Returns:
+            Optional[Any]: Function object or None if not found.
+        """
+        if name is None:
             return None
-        import builtins
+        return getattr(clz, name)
 
-        return builtins.max(args)
-
-    #
-    # Min function
-    # @param {Object} args - Arguments
-    # @returns {number} Min element in the array
-    #
     @staticmethod
-    def min_value(args: Optional[Sequence[float]]) -> Optional[float]:
+    def call(
+        clz: Optional[Type], name: Optional[str], args: Optional[Sequence]
+    ) -> Optional[Any]:
+        """
+        Calls a function by name from a class with arguments.
+        Args:
+            clz (Optional[Type]): Class to search.
+            name (Optional[str]): Name of function.
+            args (Optional[Sequence]): Arguments to pass.
+        Returns:
+            Optional[Any]: Result of function call or None if not found.
+        """
+        m = Functions.get_function(clz, name)
+        nargs = len(inspect.signature(m).parameters)
+        return Functions._call(m, nargs, args)
+
+    @staticmethod
+    def _call(m: Callable, nargs: int, args: Optional[Sequence]) -> Optional[Any]:
+        """
+        Internal helper to call a function with a fixed number of arguments, filling with None if needed.
+        Args:
+            m (Callable): Function to call.
+            nargs (int): Number of arguments expected.
+            args (Optional[Sequence]): Arguments to pass.
+        Returns:
+            Optional[Any]: Result of function call.
+        """
+        call_args = list(args)
+        while len(call_args) < nargs:
+            # Add default arg null if not enough args were provided
+            call_args.append(None)
+
+        res = m(*call_args)
+        if Utils.is_numeric(res):
+            res = Utils.convert_number(res)
+        return res
+
+    @staticmethod
+    def datetime_to_millis(
+        timestamp: Optional[str], picture: Optional[str]
+    ) -> Optional[int]:
+        """
+        Converts an ISO 8601 timestamp to milliseconds since the epoch.
+        Args:
+            timestamp (Optional[str]): Timestamp to convert.
+            picture (Optional[str]): Format picture string (optional).
+        Returns:
+            Optional[int]: Milliseconds since epoch or None if input is None.
+        """
         # undefined inputs always return undefined
-        if args is None or not args:
-            return None
-        # unreachable code below
-        import builtins
-
-        return builtins.min(args)
-
-    #
-    # Average function
-    # @param {Object} args - Arguments
-    # @returns {number} Average element in the array
-    #
-    @staticmethod
-    def average(args: Optional[Sequence[float]]) -> Optional[float]:
-        # undefined inputs always return undefined
-        if args is None or not args:
-            return None
-        # unreachable code below
-
-        return sum(args) / len(args)
-
-    #
-    # Stringify arguments
-    # @param {Object} arg - Arguments
-    # @param {boolean} [prettify] - Pretty print the result
-    # @returns {String} String from arguments
-    #
-    @staticmethod
-    def string(arg: Optional[Any], prettify: Optional[bool]) -> Optional[str]:
-
-        if isinstance(arg, JList):
-            if arg.outer_wrapper:
-                arg = arg[0]
-
-        if arg is None:
+        if timestamp is None:
             return None
 
+        if picture is None:
+            if Functions.is_numeric(timestamp):
+                dt = datetime.datetime.strptime(timestamp, "%Y")
+            else:
+                dt = datetime.datetime.fromisoformat(timestamp)
+            dt = dt.replace(tzinfo=datetime.timezone.utc)
+            return int(dt.timestamp() * 1000)
+        else:
+            from src.jsonata.DateTimeUtils import DateTimeUtils
+
+            return DateTimeUtils.DateTimeUtils.parse_datetime(timestamp, picture)
         # see https://docs.jsonata.org/string-functions#string: Strings are unchanged
         if isinstance(arg, str):
             return str(arg)
-
         return Functions._string(arg, bool(prettify))
 
     @staticmethod
     def _string(arg: Any, prettify: bool) -> str:
-
+        """
+        Internal helper to convert an argument to a string, optionally pretty-printed.
+        Args:
+            arg (Any): Argument to convert.
+            prettify (bool): Pretty print the result if True.
+        Returns:
+            str: String representation of the argument.
+        """
         if isinstance(arg, (JFunction, Parser.Symbol)):
             return ""
-
         if prettify:
             return json.dumps(arg, cls=Encoder, indent="  ")
         else:
@@ -192,6 +242,14 @@ class Functions:
 
     @staticmethod
     def remove_exponent(d: decimal.Decimal, ctx: decimal.Context) -> decimal.Decimal:
+        """
+        Remove exponent from a Decimal value, normalizing it.
+        Args:
+            d (decimal.Decimal): Decimal value.
+            ctx (decimal.Context): Decimal context.
+        Returns:
+            decimal.Decimal: Normalized decimal value.
+        """
         # Adapted from https://docs.python.org/3/library/decimal.html#decimal-faq
         if d == d.to_integral():
             try:
@@ -209,32 +267,32 @@ class Functions:
     #
     @staticmethod
     def validate_input(arg: Optional[Any]) -> None:
+        """
+        Validate that the input data type is allowed for processing.
+        Args:
+            arg (Optional[Any]): Input argument to validate.
+        Raises:
+            ValueError: If the input type is not allowed.
+        """
         if arg is None or arg is Utils.NULL_VALUE:
             return
-
         if isinstance(arg, Parser.Symbol):
             return
-
         if isinstance(arg, bool):
             return
-
         if isinstance(arg, (int, float)):
             return
-
         if isinstance(arg, str):
             return
-
         if isinstance(arg, dict):
             for k, v in arg.items():
                 Functions.validate_input(k)
                 Functions.validate_input(v)
             return
-
         if isinstance(arg, list):
             for v in arg:
                 Functions.validate_input(v)
             return
-
         # Throw error for unknown types
         raise ValueError(
             "Only JSON types (values, Map, List) are allowed as input. Unsupported type: "
@@ -252,27 +310,29 @@ class Functions:
     def substring(
         string: Optional[str], start: Optional[float], length: Optional[float]
     ) -> Optional[str]:
+        """
+        Create a substring from a string based on character number and length.
+        Args:
+            string (Optional[str]): String to evaluate.
+            start (Optional[float]): Character number to start substring.
+            length (Optional[float]): Number of characters in substring.
+        Returns:
+            Optional[str]: Substring or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         start = int(start) if start is not None else None
         length = int(length) if length is not None else None
-
-        # not used: var strArray = stringToArray(string)
         str_length = len(string)
-
         if str_length + start < 0:
             start = 0
-
         if length is not None:
             if length <= 0:
                 return ""
             return Functions.substr(string, start, length)
-
         return Functions.substr(string, start, str_length)
 
     #
@@ -290,44 +350,37 @@ class Functions:
     #
     @staticmethod
     def substr(string: str, start: int, length: int) -> str:
-
-        # below has to convert start and length for emojis and unicode
+        """
+        Create a substring from a string starting at a given index and for a given length.
+        Args:
+            string (str): String to evaluate.
+            start (int): Index to start substring.
+            length (int): Number of characters in substring.
+        Returns:
+            str: Substring result.
+        """
         orig_len = len(string)
-
         str_data = string
         str_len = len(str_data)
         if start >= str_len:
             return ""
-        # If start is negative, substr() uses it as a character index from the
-        # end of the string; the index of the last character is -1.
         start = (
             start if start >= 0 else (0 if (str_len + start) < 0 else str_len + start)
         )
         if start < 0:
-            start = 0  # If start is negative and abs(start) is larger than the length of the
-        # string, substr() uses 0 as the start index.
-        # If length is omitted, substr() extracts characters to the end of the
-        # string.
+            start = 0
         if length is None:
             length = len(str_data)
         elif length < 0:
-            # If length is 0 or negative, substr() returns an empty string.
             return ""
         elif length > len(str_data):
             length = len(str_data)
-
         if start >= 0:
-            # If start is positive and is greater than or equal to the length of
-            # the string, substr() returns an empty string.
             if start >= orig_len:
                 return ""
-
-        # collect length characters (unless it reaches the end of the string
-        # first, in which case it will return fewer)
         end = start + length
         if end > orig_len:
             end = orig_len
-
         return str_data[start:end]
 
     #
@@ -338,16 +391,21 @@ class Functions:
     #
     @staticmethod
     def substring_before(string: Optional[str], chars: Optional[str]) -> Optional[str]:
+        """
+        Return the substring before the first occurrence of a character sequence.
+        Args:
+            string (Optional[str]): String to evaluate.
+            chars (Optional[str]): Character(s) to define substring boundary.
+        Returns:
+            Optional[str]: Substring before chars, or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         if chars is None:
             return string
-
         pos = string.find(chars)
         if pos > -1:
             return string[0:pos]
@@ -362,13 +420,19 @@ class Functions:
     #
     @staticmethod
     def substring_after(string: Optional[str], chars: Optional[str]) -> Optional[str]:
+        """
+        Return the substring after the first occurrence of a character sequence.
+        Args:
+            string (Optional[str]): String to evaluate.
+            chars (Optional[str]): Character(s) to define substring boundary.
+        Returns:
+            Optional[str]: Substring after chars, or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         pos = string.find(chars)
         if pos > -1:
             return string[pos + len(chars) :]
@@ -382,13 +446,18 @@ class Functions:
     #
     @staticmethod
     def lowercase(string: Optional[str]) -> Optional[str]:
+        """
+        Convert a string to lowercase.
+        Args:
+            string (Optional[str]): String to convert.
+        Returns:
+            Optional[str]: Lowercase string or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         return string.casefold()
 
     #
@@ -398,13 +467,18 @@ class Functions:
     #
     @staticmethod
     def uppercase(string: Optional[str]) -> Optional[str]:
+        """
+        Convert a string to uppercase.
+        Args:
+            string (Optional[str]): String to convert.
+        Returns:
+            Optional[str]: Uppercase string or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         return string.upper()
 
     #
@@ -414,13 +488,18 @@ class Functions:
     #
     @staticmethod
     def length(string: Optional[str]) -> Optional[int]:
+        """
+        Return the length of a string.
+        Args:
+            string (Optional[str]): String to evaluate.
+        Returns:
+            Optional[int]: Number of characters in the string, or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         return len(string)
 
     #
@@ -430,25 +509,27 @@ class Functions:
     #
     @staticmethod
     def trim(string: Optional[str]) -> Optional[str]:
+        """
+        Normalize and trim whitespace within a string.
+        Args:
+            string (Optional[str]): String to be trimmed.
+        Returns:
+            Optional[str]: Trimmed string or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         if not string:
             return ""
-
         # normalize whitespace
         result = re.sub("[ \t\n\r]+", " ", string)
         if result[0] == " ":
             # strip leading space
             result = result[1:]
-
         if result == "":
             return ""
-
         if result[len(result) - 1] == " ":
             # strip trailing space
             result = result[0 : len(result) - 1]
@@ -465,16 +546,22 @@ class Functions:
     def pad(
         string: Optional[str], width: Optional[int], char: Optional[str]
     ) -> Optional[str]:
+        """
+        Pad a string to a minimum width by adding characters to the start or end.
+        Args:
+            string (Optional[str]): String to be padded.
+            width (Optional[int]): Minimum width; positive pads right, negative pads left.
+            char (Optional[str]): Pad character(s); defaults to space.
+        Returns:
+            Optional[str]: Padded string or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         if char is None or not char:
             char = " "
-
         # match JS: truncate width to integer
         if width is not None:
             try:
@@ -482,7 +569,6 @@ class Functions:
             except ValueError as exc:
                 logging.error("Exception in width calculation: %s", exc)
                 width = 0
-
         if width < 0:
             result = Functions.left_pad(string, -width, char)
         else:
@@ -494,18 +580,23 @@ class Functions:
     def left_pad(
         string: Optional[str], size: Optional[int], pad_str: Optional[str]
     ) -> Optional[str]:
+        """
+        Pad a string on the left to a specified size using a pad string.
+        Args:
+            string (Optional[str]): String to pad.
+            size (Optional[int]): Desired total length after padding.
+            pad_str (Optional[str]): Pad character(s); defaults to space.
+        Returns:
+            Optional[str]: Left-padded string or None if input is None.
+        """
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         if pad_str is None:
             pad_str = " "
-
         str_data = string
         str_len = len(str_data)
-
         if not pad_str:
             pad_str = " "
         pads = size - str_len
@@ -523,18 +614,23 @@ class Functions:
     def right_pad(
         string: Optional[str], size: Optional[int], pad_str: Optional[str]
     ) -> Optional[str]:
+        """
+        Pad a string on the right to a specified size using a pad string.
+        Args:
+            string (Optional[str]): String to pad.
+            size (Optional[int]): Desired total length after padding.
+            pad_str (Optional[str]): Pad character(s); defaults to space.
+        Returns:
+            Optional[str]: Right-padded string or None if input is None.
+        """
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         if pad_str is None:
             pad_str = " "
-
         str_data = string
         str_len = len(str_data)
-
         if not pad_str:
             pad_str = " "
         pads = size - str_len
@@ -558,51 +654,50 @@ class Functions:
     def evaluate_matcher(
         matcher: re.Pattern, string: Optional[str]
     ) -> list[RegexpMatch]:
+        """
+        Evaluate a regex matcher against a string and return a list of RegexpMatch objects.
+        Args:
+            matcher (re.Pattern): Compiled regex pattern to match against.
+            string (Optional[str]): String to search for matches.
+        Returns:
+            list[RegexpMatch]: List of RegexpMatch objects representing matches found.
+        """
         res = []
+        if string is None:
+            return res
         matches = matcher.finditer(string)
-        for m in matches:
-            groups = []
-            # Collect the groups
-            g = 1
-            while g <= len(m.groups()):
-                groups.append(m.group(g))
-                g += 1
-
-            rm = RegexpMatch(m.group(), m.start(), groups)
-            rm.groups = groups
+        for match in matches:
+            # RegexpMatch should be constructed with match details
+            # Assuming RegexpMatch(match, index, groups)
+            rm = RegexpMatch(match.group(), match.start(), match.groups())
             res.append(rm)
         return res
 
-    #
-    # Tests if the str contains the token
-    # @param {String} str - string to test
-    # @param {String} token - substring or regex to find
-    # @returns {Boolean} - true if str contains token
-    #
     @staticmethod
     def contains(
         string: Optional[str], token: Union[None, str, re.Pattern]
     ) -> Optional[bool]:
+        """
+        Check if a string contains a substring or matches a regex pattern.
+        Args:
+            string (Optional[str]): String to search.
+            token (Union[None, str, re.Pattern]): Substring or regex pattern to search for.
+        Returns:
+            Optional[bool]: True if found, False otherwise, or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             return None
-
         result = False
-
         if isinstance(token, str):
             result = string.find(str(token)) != -1
         elif isinstance(token, re.Pattern):
             matches = Functions.evaluate_matcher(token, string)
-            # if (dbg) System.out.println("match = "+matches)
-            # result = (typeof matches !== 'undefined')
-            # throw new Error("regexp not impl"); //result = false
             result = bool(matches)
         else:
             raise RuntimeError("unknown type to match: " + str(token))
-
         return result
 
     #
@@ -616,26 +711,32 @@ class Functions:
     def match_(
         string: Optional[str], regex: Optional[re.Pattern], limit: Optional[int]
     ) -> Optional[list[dict[str, Any]]]:
+        """
+        Match a string with a regex, returning an array of objects containing details of each match.
+        Args:
+            string (Optional[str]): String to search for matches.
+            regex (Optional[re.Pattern]): Regex pattern to apply.
+            limit (Optional[int]): Maximum number of matches to return.
+        Returns:
+            Optional[list[dict[str, Any]]]: Array of match objects or None if input is None.
+        Raises:
+            JException: If input is null or limit is negative.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         # limit, if specified, must be a non-negative number
         if limit is not None and limit < 0:
             raise JException("D3040", -1, limit)
-
         result = Utils.create_sequence()
         matches = Functions.evaluate_matcher(regex, string)
         max_value = sys.maxsize
         if limit is not None:
             max_value = limit
-
         for i, rm in enumerate(matches):
             m = {"match": rm.match, "index": rm.index, "groups": rm.groups}
-            # Convert to JSON map:
             result.append(m)
             if i >= max_value:
                 break
@@ -649,22 +750,31 @@ class Functions:
     #
     @staticmethod
     def join(strs: Optional[Sequence[str]], separator: Optional[str]) -> Optional[str]:
-        # undefined inputs always return undefined
+        """
+        Join an array of strings with a separator.
+        Args:
+            strs (Optional[Sequence[str]]): Array of strings to join.
+            separator (Optional[str]): Separator string. Defaults to empty string if not provided.
+        Returns:
+            Optional[str]: Concatenated string or None if input is None.
+        """
         if strs is None:
             return None
-
-        # if separator is not specified, default to empty string
         if separator is None:
             separator = ""
-
         return separator.join(strs)
 
     @staticmethod
     def safe_replacement(in_: str) -> str:
+        """
+        Safely replace group references in a replacement string for regex operations.
+        Args:
+            in_ (str): Input replacement string.
+        Returns:
+            str: Safe replacement string.
+        """
         result = in_
-
-        result = re.sub(r"\$(\d+)", r"\\g<\g<1>>", result)
-
+        result = re.sub(r"\$(\d+)", r"\\g<\\g<1>>", result)
         # Replace "$$" with "$"
         result = re.sub("\\$\\$", "$", result)
 
@@ -678,41 +788,39 @@ class Functions:
     # @param pattern
     # @param replacement
     # @return
-    #
     @staticmethod
     def safe_replace_all(
         s: str, pattern: re.Pattern, replacement: Optional[Any]
     ) -> Optional[str]:
-
-        if not (isinstance(replacement, str)):
+        """
+        Safely replace all occurrences of a pattern in a string, handling non-existing groups.
+        Args:
+            s (str): Input string.
+            pattern (re.Pattern): Regex pattern to match.
+            replacement (Optional[Any]): Replacement string or function.
+        Returns:
+            Optional[str]: Resulting string after replacements.
+        """
+        if not isinstance(replacement, str):
             return Functions.safe_replace_all_fn(s, pattern, replacement)
-
         replacement = str(replacement)
         replacement = Functions.safe_replacement(replacement)
         r = None
-        for _ in range(0, 10):
+        for _ in range(10):
             try:
                 r = re.sub(pattern, replacement, s)
                 break
             except ValueError as exc:
                 logging.error("Exception in calculation: %s", exc)
                 msg = str(exc)
-
-                # Message we understand needs to be:
-                # invalid group reference <g> at position <p>
                 m = re.match(r"invalid group reference (\d+) at position (\d+)", msg)
-
                 if m is None:
                     raise exc
-
                 g = m.group(1)
                 suffix = g[-1]
                 prefix = g[:-1]
-                # Try capturing a smaller numbered group, e.g. "\g<1>2" instead of "\g<12>"
-                replace = "" if not prefix else r"\g<" + prefix + ">" + suffix
-
-                # Adjust replacement to remove the non-existing group
-                replacement = replacement.replace(r"\g<" + g + ">", replace)
+                replace = "" if not prefix else r"\\g<" + prefix + ">" + suffix
+                replacement = replacement.replace(r"\\g<" + g + ">", replace)
         return r
 
     #
@@ -743,6 +851,16 @@ class Functions:
     #
     @staticmethod
     def safe_replace_all_fn(s: str, pattern: re.Pattern, fn: Optional[Any]) -> str:
+        """
+        Safely replace all occurrences of a pattern using a replacement function.
+        Args:
+            s (str): Input string.
+            pattern (re.Pattern): Regex pattern to match.
+            fn (Optional[Any]): Replacement function.
+        Returns:
+            str: Resulting string after replacements.
+        """
+
         def replace_fn(t):
             res = Functions.func_apply(fn, [Functions.to_jsonata_match(t)])
             if isinstance(res, str):
@@ -765,6 +883,15 @@ class Functions:
     def safe_replace_first(
         s: str, pattern: re.Pattern, replacement: str
     ) -> Optional[str]:
+        """
+        Safely replace the first occurrence of a pattern in a string, handling non-existing groups.
+        Args:
+            s (str): Input string.
+            pattern (re.Pattern): Regex pattern to match.
+            replacement (str): Replacement string.
+        Returns:
+            Optional[str]: Resulting string after replacement.
+        """
         replacement = Functions.safe_replacement(replacement)
         r = None
         for _ in range(0, 10):
@@ -774,22 +901,14 @@ class Functions:
             except ValueError as exc:
                 logging.error("Exception in calculation: %s", exc)
                 msg = str(exc)
-
-                # Message we understand needs to be:
-                # invalid group reference <g> at position <p>
                 m = re.match(r"invalid group reference (\d+) at position (\d+)", msg)
-
                 if m is None:
                     raise exc
-
                 g = m.group(1)
                 suffix = g[-1]
                 prefix = g[:-1]
-                # Try capturing a smaller numbered group, e.g. "\g<1>2" instead of "\g<12>"
-                replace = "" if not prefix else r"\g<" + prefix + ">" + suffix
-
-                # Adjust replacement to remove the non-existing group
-                replacement = replacement.replace(r"\g<" + g + ">", replace)
+                replace = "" if not prefix else r"\\g<" + prefix + ">" + suffix
+                replacement = replacement.replace(r"\\g<" + g + ">", replace)
         return r
 
     @staticmethod
@@ -799,18 +918,25 @@ class Functions:
         replacement: Optional[Any],
         limit: Optional[int],
     ) -> Optional[str]:
+        """
+        Replace occurrences of a pattern in a string with a replacement, supporting limits and regex.
+        Args:
+            string (Optional[str]): Input string.
+            pattern (Union[str, re.Pattern]): Pattern to match.
+            replacement (Optional[Any]): Replacement string or function.
+            limit (Optional[int]): Maximum number of replacements.
+        Returns:
+            Optional[str]: Resulting string after replacements.
+        """
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         if isinstance(pattern, str):
             if not pattern:
                 raise JException(
                     "Second argument of replace function cannot be an empty string", 0
                 )
-
         if limit is not None and limit < 0:
             raise JException(
                 "Fourth argument of replace function must evaluate to a positive number",
@@ -858,9 +984,7 @@ class Functions:
             replacer = string_replacer
         else:
             replacer = lambda m: str(replacement)
-
         if isinstance(pattern, str):
-            # Use string methods for literal string patterns
             result = ""
             position = 0
             count = 0
@@ -879,7 +1003,6 @@ class Functions:
                 count += 1
             return result
         else:
-            # Use regex for pattern objects
             if limit is None:
                 return Functions.safe_replace_all(string, pattern, replacement)
             else:
@@ -899,13 +1022,18 @@ class Functions:
     #
     @staticmethod
     def base64encode(string: Optional[str]) -> Optional[str]:
+        """
+        Encode a string to Base64.
+        Args:
+            string (Optional[str]): String to encode.
+        Returns:
+            Optional[str]: Base64 encoded string or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         try:
             return base64.b64encode(string.encode("utf-8")).decode("utf-8")
         except ValueError as exc:
@@ -918,13 +1046,18 @@ class Functions:
     #
     @staticmethod
     def base64decode(string: Optional[str]) -> Optional[str]:
+        """
+        Decode a Base64 encoded string.
+        Args:
+            string (Optional[str]): String to decode.
+        Returns:
+            Optional[str]: Decoded string or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         try:
             return base64.b64decode(string.encode("utf-8")).decode("utf-8")
         except ValueError as exc:
@@ -937,14 +1070,18 @@ class Functions:
     #
     @staticmethod
     def encode_url_component(string: Optional[str]) -> Optional[str]:
+        """
+        Encode a string into a URL component.
+        Args:
+            string (Optional[str]): String to encode.
+        Returns:
+            Optional[str]: Encoded string or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
-        # See https://stackoverflow.com/questions/946170/equivalent-javascript-functions-for-pythons-urllib-parse-quote-and-urllib-par
         return urllib.parse.quote(string, safe="~()*!.'")
 
     #
@@ -954,14 +1091,18 @@ class Functions:
     #
     @staticmethod
     def encode_url(string: Optional[str]) -> Optional[str]:
+        """
+        Encode a string into a URL.
+        Args:
+            string (Optional[str]): String to encode.
+        Returns:
+            Optional[str]: Encoded string or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
-        # See https://stackoverflow.com/questions/946170/equivalent-javascript-functions-for-pythons-urllib-parse-quote-and-urllib-par
         return urllib.parse.quote(string, safe="~@#$&()*!+=:;,.?/'")
 
     #
@@ -971,14 +1112,18 @@ class Functions:
     #
     @staticmethod
     def decode_url_component(string: Optional[str]) -> Optional[str]:
+        """
+        Decode a string from a URL component.
+        Args:
+            string (Optional[str]): String to decode.
+        Returns:
+            Optional[str]: Decoded string or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
-        # See https://stackoverflow.com/questions/946170/equivalent-javascript-functions-for-pythons-urllib-parse-quote-and-urllib-par
         return urllib.parse.unquote(string, errors="strict")
 
     #
@@ -988,14 +1133,18 @@ class Functions:
     #
     @staticmethod
     def decode_url(string: Optional[str]) -> Optional[str]:
+        """
+        Decode a string from a URL.
+        Args:
+            string (Optional[str]): String to decode.
+        Returns:
+            Optional[str]: Decoded string or None if input is None.
+        """
         # undefined inputs always return undefined
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
-        # See https://stackoverflow.com/questions/946170/equivalent-javascript-functions-for-pythons-urllib-parse-quote-and-urllib-par
         return urllib.parse.unquote(string, errors="strict")
 
     @staticmethod
@@ -1004,30 +1153,33 @@ class Functions:
         pattern: Union[str, Optional[re.Pattern]],
         limit: Optional[float],
     ) -> Optional[list[str]]:
+        """
+        Split a string by a separator or regex pattern, with optional limit.
+        Args:
+            string (Optional[str]): String to split.
+            pattern (Union[str, Optional[re.Pattern]]): Separator or regex pattern.
+            limit (Optional[float]): Maximum number of splits.
+        Returns:
+            Optional[list[str]]: List of split strings or None if input is None.
+        """
         if string is None:
             return None
-
         if string is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         if limit is not None and int(limit) < 0:
             raise JException("D3020", -1, string)
-
         result = []
         if limit is not None and int(limit) == 0:
             return result
-
         if isinstance(pattern, str):
             sep = str(pattern)
             if not sep:
-                # $split("str", ""): Split string into characters
                 lim = int(limit) if limit is not None else sys.maxsize
                 i = 0
                 while i < len(string) and i < lim:
                     result.append(string[i])
                     i += 1
             else:
-                # Quote separator string + preserve trailing empty strings (-1)
                 result = string.split(sep, -1)
         else:
             result = pattern.split(string)
@@ -1051,21 +1203,27 @@ class Functions:
         picture: Optional[str],
         decimal_format: Optional[Mapping[str, str]],
     ) -> Optional[str]:
+        """
+        Format a number into a decimal string representation using XPath 3.1 F&O fn:format-number spec.
+        Args:
+            value (Optional[float]): Number to format.
+            picture (Optional[str]): Picture string definition.
+            decimal_format (Optional[Mapping[str, str]]): Locale and formatting options.
+        Returns:
+            Optional[str]: The formatted string or None if input is None.
+        """
         if decimal_format is None:
             decimal_format = {}
         pattern_separator = decimal_format.get("pattern-separator", ";")
         sub_pictures = picture.split(pattern_separator)
         if len(sub_pictures) > 2:
             raise JException("D3080", -1)
-
         decimal_separator = decimal_format.get("decimal-separator", ".")
         if any(p.count(decimal_separator) > 1 for p in sub_pictures):
             raise JException("D3081", -1)
-
         percent_sign = decimal_format.get("percent", "%")
         if any(p.count(percent_sign) > 1 for p in sub_pictures):
             raise JException("D3082", -1)
-
         per_mille_sign = decimal_format.get("per-mille", "‰")
         if any(p.count(per_mille_sign) > 1 for p in sub_pictures):
             raise JException("D3083", -1)
@@ -1073,7 +1231,6 @@ class Functions:
             p.count(percent_sign) + p.count(per_mille_sign) > 1 for p in sub_pictures
         ):
             raise JException("D3084")
-
         zero_digit = decimal_format.get("zero-digit", "0")
         optional_digit = decimal_format.get("digit", "#")
         digits_family = "".join(chr(cp + ord(zero_digit)) for cp in range(10))
@@ -1082,7 +1239,6 @@ class Functions:
             for p in sub_pictures
         ):
             raise JException("D3085", -1)
-
         grouping_separator = decimal_format.get("grouping-separator", ",")
         adjacent_pattern = re.compile(
             r"[\\%s\\%s]{2}" % (grouping_separator, decimal_separator)
@@ -1310,11 +1466,13 @@ class Functions:
     @staticmethod
     def decimal_to_string(value: decimal.Decimal) -> str:
         """
-        Convert a Decimal value to a string representation
-        that not includes exponent and with its decimals.
+        Convert a Decimal value to a string representation without exponent, preserving decimals.
+        Args:
+            value (decimal.Decimal): Decimal value to convert.
+        Returns:
+            str: String representation of the decimal value.
         """
         sign, digits, exponent = value.as_tuple()
-
         if not exponent:
             result = "".join(str(x) for x in digits)
         elif exponent > 0:
@@ -1329,7 +1487,6 @@ class Functions:
             else:
                 result += "0" * (-exponent - len(digits))
                 result += "".join(str(x) for x in digits)
-
         return "-" + result if sign else result
 
     @staticmethod
@@ -1340,10 +1497,20 @@ class Functions:
         optional_digit: str = "#",
         grouping_separator: Optional[str] = None,
     ) -> str:
+        """
+        Format digits according to a picture string, supporting grouping and optional digits.
+        Args:
+            digits (str): Digits to format.
+            fmt (str): Picture string format.
+            digits_family (str): Digits family for formatting.
+            optional_digit (str): Optional digit character.
+            grouping_separator (Optional[str]): Grouping separator character.
+        Returns:
+            str: Formatted string according to the picture.
+        """
         result = []
         iter_num_digits = reversed(digits)
         num_digit = next(iter_num_digits)
-
         for fmt_char in reversed(fmt):
             if fmt_char in digits_family or fmt_char == optional_digit:
                 if num_digit:
@@ -1360,7 +1527,6 @@ class Functions:
                 raise JException("invalid grouping in picture argument", -1)
             else:
                 result.append(fmt_char)
-
         if num_digit:
             separator = ""
             sep = {x for x in fmt if x not in digits_family and x != optional_digit}
@@ -1369,14 +1535,12 @@ class Functions:
             else:
                 separator = sep.pop()
                 chunks = fmt.split(separator)
-
                 if len(chunks[0]) > len(chunks[-1]):
                     repeat = None
                 elif all(len(item) == len(chunks[-1]) for item in chunks[1:-1]):
                     repeat = len(chunks[-1]) + 1
                 else:
                     repeat = None
-
             if repeat is None:
                 while num_digit:
                     result.append(digits_family[ord(num_digit) - 48])
@@ -1411,6 +1575,16 @@ class Functions:
     #
     @staticmethod
     def format_base(value: Optional[float], radix: Optional[float]) -> Optional[str]:
+        """
+        Converts a number to a string using a specified number base.
+        Args:
+            value (Optional[float]): The number to convert.
+            radix (Optional[float]): The number base; must be between 2 and 36. Defaults to 10.
+        Returns:
+            Optional[str]: The converted string, or None if input is None.
+        Raises:
+            JException: If radix is out of range.
+        """
         # undefined inputs always return undefined
         if value is None:
             return None
@@ -1433,22 +1607,14 @@ class Functions:
     def base_repr(number: int, base: int = 2, padding: int = 0) -> str:
         """
         Return a string representation of a number in the given base system.
-
-        Parameters
-        ----------
-        number : int
-            The value to convert. Positive and negative values are handled.
-        base : int, optional
-            Convert `number` to the `base` number system. The valid range is 2-36,
-            the default value is 2.
-        padding : int, optional
-            Number of zeros padded on the left. Default is 0 (no padding).
-
-        Returns
-        -------
-        out : str
-            String representation of `number` in `base` system.
-
+        Args:
+            number (int): The value to convert. Positive and negative values are handled.
+            base (int, optional): Convert `number` to the `base` number system. Valid range is 2-36. Default is 2.
+            padding (int, optional): Number of zeros padded on the left. Default is 0 (no padding).
+        Returns:
+            str: String representation of `number` in `base` system.
+        Raises:
+            ValueError: If base is out of range.
         """
         digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         if base > len(digits):
@@ -1458,47 +1624,17 @@ class Functions:
 
         num = abs(number)
         res = []
+        if num == 0:
+            res.append("0")
         while num:
             res.append(digits[num % base])
             num //= base
         if padding:
-            res.append("0" * padding)
+            while len(res) < padding:
+                res.append("0")
         if number < 0:
             res.append("-")
-        return "".join(reversed(res or "0"))
-
-    #
-    # Cast argument to number
-    # @param {Object} arg - Argument
-    # @throws NumberFormatException
-    # @returns {Number} numeric value of argument
-    #
-    @staticmethod
-    def number(arg: Optional[Any]) -> Optional[float]:
-        result = None
-
-        # undefined inputs always return undefined
-        if arg is None:
-            return None
-
-        if arg is Utils.NULL_VALUE:
-            raise JException("T0410", -1)
-
-        if isinstance(arg, bool):
-            result = 1 if (bool(arg)) else 0
-        elif isinstance(arg, (int, float)):
-            result = arg
-        elif isinstance(arg, str):
-            s = str(arg)
-            if s.startswith("0x"):
-                result = int(s[2:], 16)
-            elif s.startswith("0B"):
-                result = int(s[2:], 2)
-            elif s.startswith("0O"):
-                result = int(s[2:], 8)
-            else:
-                result = float(str(arg))
-        return result
+        return "".join(reversed(res))
 
     #
     # Absolute value of a number
@@ -1507,25 +1643,30 @@ class Functions:
     #
     @staticmethod
     def abs(arg: Optional[float]) -> Optional[float]:
-
+        """
+        Return the absolute value of a number.
+        Args:
+            arg (Optional[float]): Argument to evaluate.
+        Returns:
+            Optional[float]: Absolute value or None if input is None.
+        """
         # undefined inputs always return undefined
         if arg is None:
             return None
+        return abs(float(arg))
 
-        return abs(float(arg)) if isinstance(arg, float) else abs(int(arg))
-
-    #
-    # Rounds a number down to integer
-    # @param {Number} arg - Argument
-    # @returns {Number} rounded integer
-    #
     @staticmethod
     def floor(arg: Optional[float]) -> Optional[float]:
-
+        """
+        Return the largest integer less than or equal to a number.
+        Args:
+            arg (Optional[float]): Argument to evaluate.
+        Returns:
+            Optional[float]: Floored integer or None if input is None.
+        """
         # undefined inputs always return undefined
         if arg is None:
             return None
-
         return math.floor(float(arg))
 
     #
@@ -1535,11 +1676,16 @@ class Functions:
     #
     @staticmethod
     def ceil(arg: Optional[float]) -> Optional[float]:
-
+        """
+        Rounds a number up to the nearest integer.
+        Args:
+            arg (Optional[float]): Argument to round up.
+        Returns:
+            Optional[float]: Rounded integer or None if input is None.
+        """
         # undefined inputs always return undefined
         if arg is None:
             return None
-
         return math.ceil(float(arg))
 
     #
@@ -1550,13 +1696,26 @@ class Functions:
     #
     @staticmethod
     def round(arg: Optional[float], precision: Optional[float]) -> Optional[float]:
-
+        """
+        Round a number to a given precision using half-even rounding.
+        Args:
+            arg (Optional[float]): Number to round.
+            precision (Optional[float]): Number of decimal places.
+        Returns:
+            Optional[float]: Rounded number or None if input is None.
+        """
         # undefined inputs always return undefined
         if arg is None:
             return None
-
+        if precision is None:
+            precision = 0
         d = decimal.Decimal(str(arg))
-        return float(round(d, precision))
+        quantize_exp = (
+            decimal.Decimal("1")
+            if precision == 0
+            else decimal.Decimal("1e-" + str(int(precision)))
+        )
+        return float(d.quantize(quantize_exp, rounding=decimal.ROUND_HALF_EVEN))
 
     #
     # Square root of number
@@ -1565,14 +1724,20 @@ class Functions:
     #
     @staticmethod
     def sqrt(arg: Optional[float]) -> Optional[float]:
-
+        """
+        Return the square root of a number.
+        Args:
+            arg (Optional[float]): Argument to evaluate.
+        Returns:
+            Optional[float]: Square root or None if input is None.
+        Raises:
+            JException: If input is negative.
+        """
         # undefined inputs always return undefined
         if arg is None:
             return None
-
         if float(arg) < 0:
             raise JException("D3060", 1, arg)
-
         return math.sqrt(float(arg))
 
     #
@@ -1583,16 +1748,22 @@ class Functions:
     #
     @staticmethod
     def power(arg: Optional[float], exp: Optional[float]) -> Optional[float]:
-
+        """
+        Raise a number to the power of another number.
+        Args:
+            arg (Optional[float]): Base number.
+            exp (Optional[float]): Exponent.
+        Returns:
+            Optional[float]: Result of exponentiation or None if input is None.
+        Raises:
+            JException: If result is not finite.
+        """
         # undefined inputs always return undefined
-        if arg is None:
+        if arg is None or exp is None:
             return None
-
         result = float(arg) ** float(exp)
-
         if not math.isfinite(result):
             raise JException("D3061", 1, arg, exp)
-
         return result
 
     #
@@ -1601,6 +1772,11 @@ class Functions:
     #
     @staticmethod
     def random() -> float:
+        """
+        Returns a random floating point number in the range [0, 1).
+        Returns:
+            float: Random number between 0 (inclusive) and 1 (exclusive).
+        """
         return random.random()
 
     #
@@ -1610,73 +1786,67 @@ class Functions:
     #
     @staticmethod
     def to_boolean(arg: Optional[Any]) -> Optional[bool]:
-
-        # cast arg to its effective boolean value
-        # boolean: unchanged
-        # string: zero-length -> false; otherwise -> true
-        # number: 0 -> false; otherwise -> true
-        # null -> false
-        # array: empty -> false; length > 1 -> true
-        # object: empty -> false; non-empty -> true
-        # function -> false
-
+        """
+        Evaluate an input and return its effective boolean value according to Jsonata rules.
+        Args:
+            arg (Optional[Any]): Input value to evaluate.
+        Returns:
+            Optional[bool]: Boolean value or None if input is None.
+        """
         # undefined inputs always return undefined
         if arg is None:
-            return None  # Uli: Null would need to be handled as false anyway
-
-        result = False
+            return None
+        if isinstance(arg, bool):
+            return arg
+        if isinstance(arg, str):
+            return len(arg) > 0
+        if isinstance(arg, (int, float, complex)):
+            return arg != 0
+        if arg is Utils.NULL_VALUE:
+            return False
         if isinstance(arg, list):
-            el = arg
-            if len(el) == 1:
-                result = Functions.to_boolean(el[0])
-            elif len(el) > 1:
-                from src.jsonata.Jsonata.Jsonata import Jsonata
+            return len(arg) > 0
+        if isinstance(arg, dict):
+            return len(arg) > 0
+        # For functions and other types, return False
+        return False
 
-                result = any(Jsonata.boolize(e) for e in el)
-        elif isinstance(arg, str):
-            s = str(arg)
-            if s:
-                result = True
-        elif isinstance(arg, bool):
-            result = bool(arg)
-        elif isinstance(arg, (int, float)):
-            if float(arg) != 0:
-                result = True
-        elif isinstance(arg, dict):
-            if arg:
-                result = True
-        return result
-
-    #
-    # returns the Boolean NOT of the arg
-    # @param {*} arg - argument
     # @returns {boolean} - NOT arg
     #
     @staticmethod
     def not_(arg: Optional[Any]) -> Optional[bool]:
+        """
+        Return the logical NOT of the effective boolean value of the argument.
+        Args:
+            arg (Optional[Any]): Input value to evaluate.
+        Returns:
+            Optional[bool]: Logical NOT of the boolean value, or None if input is None.
+        """
         # undefined inputs always return undefined
         if arg is None:
             return None
-
         return not Functions.to_boolean(arg)
 
     @staticmethod
     def get_function_arity(func: Any) -> int:
-        # Removed invalid Jsonata.JFunction reference
+        """
+        Return the number of arguments (arity) for a function.
+        Args:
+            func (Any): Function object to inspect.
+        Returns:
+            int: Number of arguments the function takes.
+        """
+        # If the function has a 'signature' attribute with 'get_min_number_of_args', use it
         if hasattr(func, "signature") and hasattr(
             func.signature, "get_min_number_of_args"
         ):
             return func.signature.get_min_number_of_args()
-        elif "JLambda" in func.__class__.__name__:
-            # inspect already imported at module level
-
+        # If the function has a 'function' attribute, use inspect
+        if hasattr(func, "function"):
             return len(inspect.signature(func.function).parameters)
-        else:
-            return len(func.arguments)
+        # Otherwise, use inspect directly
+        return len(inspect.signature(func).parameters)
 
-    #
-    # Helper function to build the arguments to be supplied to the function arg of the
-    # HOFs map, filter, each, sift and single
     # @param {function} func - the function to be invoked
     # @param {*} arg1 - the first (required) arg - the value
     # @param {*} arg2 - the second (optional) arg - the position (index or key)
@@ -1687,8 +1857,17 @@ class Functions:
     def hof_func_args(
         func: Any, arg1: Optional[Any], arg2: Optional[Any], arg3: Optional[Any]
     ) -> list:
+        """
+        Build argument list for higher-order functions (map, filter, each, sift, single).
+        Args:
+            func (Any): Function to be invoked.
+            arg1 (Optional[Any]): First argument (value).
+            arg2 (Optional[Any]): Second argument (index/key).
+            arg3 (Optional[Any]): Third argument (whole structure).
+        Returns:
+            list: Argument list for function.
+        """
         func_args = [arg1]
-        # the other two are optional - only supply it if the function can take it
         length = Functions.get_function_arity(func)
         if length >= 2:
             func_args.append(arg2)
@@ -1706,7 +1885,14 @@ class Functions:
     #
     @staticmethod
     def func_apply(func: Any, func_args: Optional[Sequence]) -> Optional[Any]:
-
+        """
+        Call a function with arguments, handling lambdas and native functions.
+        Args:
+            func (Any): Function to call.
+            func_args (Optional[Sequence]): Arguments to pass.
+        Returns:
+            Optional[Any]: Result of function call.
+        """
         from src.jsonata.Jsonata.Jsonata import Jsonata
 
         res = None
@@ -1729,10 +1915,16 @@ class Functions:
     #
     @staticmethod
     def map(arr: Optional[Sequence], func: Any) -> Optional[list]:
-        # undefined inputs always return undefined
+        """
+        Apply a function to each element in an array and return the results.
+        Args:
+            arr (Optional[Sequence]): Array to map over.
+            func (Any): Function to apply.
+        Returns:
+            Optional[list]: Mapped array or None if input is None.
+        """
         if arr is None:
             return None
-
         result = (
             res
             for res in (
@@ -1751,10 +1943,16 @@ class Functions:
     #
     @staticmethod
     def filter(arr: Optional[Sequence], func: Any) -> Optional[list]:
-        # undefined inputs always return undefined
+        """
+        Filter an array by applying a predicate function to each element.
+        Args:
+            arr (Optional[Sequence]): Array to filter.
+            func (Any): Predicate function.
+        Returns:
+            Optional[list]: Filtered array or None if input is None.
+        """
         if arr is None:
             return None
-
         result = (
             arg
             for i, arg in enumerate(arr)
@@ -1773,18 +1971,24 @@ class Functions:
     #
     @staticmethod
     def single(arr: Optional[Sequence], func: Any) -> Optional[Any]:
-        # undefined inputs always return undefined
+        """
+        Find the single element in an array matching a condition; raise if not exactly one match.
+        Args:
+            arr (Optional[Sequence]): Array to filter.
+            func (Any): Predicate function.
+        Returns:
+            Optional[Any]: Matching element.
+        Raises:
+            JException: If not exactly one match is found.
+        """
         if arr is None:
             return None
-
         has_found_match = False
         result = None
-
         for i, entry in enumerate(arr):
             positive_result = True
             if func is not None:
                 func_args = Functions.hof_func_args(func, entry, i, arr)
-                # invoke func
                 res = Functions.func_apply(func, func_args)
                 positive_result = Functions.to_boolean(res)
             if positive_result:
@@ -1793,10 +1997,8 @@ class Functions:
                     has_found_match = True
                 else:
                     raise JException("D3138", i)
-
         if not has_found_match:
             raise JException("D3139", -1)
-
         return result
 
     #
@@ -1806,9 +2008,15 @@ class Functions:
     #
     @staticmethod
     def zip(*args: Sequence) -> list:
+        """
+        Zip multiple arrays together, returning a list of tuples.
+        Args:
+            *args (Sequence): Arrays to zip.
+        Returns:
+            list: Zipped array.
+        """
         if any(a is None for a in args):
             return []
-
         return [list(a) for a in zip(*args)]
 
     #
@@ -1822,15 +2030,23 @@ class Functions:
     def fold_left(
         sequence: Optional[Sequence], func: Any, init: Optional[Any]
     ) -> Optional[Any]:
-        # undefined inputs always return undefined
+        """
+        Fold left (reduce) a sequence using a function and initial value.
+        Args:
+            sequence (Optional[Sequence]): Sequence to fold.
+            func (Any): Function to apply.
+            init (Optional[Any]): Initial value.
+        Returns:
+            Optional[Any]: Result of folding, or None if input is None.
+        Raises:
+            JException: If function arity is less than 2.
+        """
         if sequence is None:
             return None
         result = None
-
         arity = Functions.get_function_arity(func)
         if arity < 2:
             raise JException("D3050", 1)
-
         index = 0
         if init is None and sequence:
             result = sequence[0]
@@ -1838,7 +2054,6 @@ class Functions:
         else:
             result = init
             index = 0
-
         while index < len(sequence):
             args = [result, sequence[index]]
             if arity >= 3:
@@ -1857,15 +2072,20 @@ class Functions:
     #
     @staticmethod
     def keys(arg: Union[Sequence, Mapping, None]) -> list:
+        """
+        Return keys for an object or merge keys from a list of objects.
+        Args:
+            arg (Union[Sequence, Mapping, None]): Object or list of objects.
+        Returns:
+            list: Array of keys.
+        """
         if isinstance(arg, list):
-            # merge the keys of all of the items in the array
             keys = {k: "" for el in arg for k in Functions.keys(el)}
             result = Utils.create_sequence_from_iter(keys.keys())
         elif isinstance(arg, dict):
             result = Utils.create_sequence_from_iter(arg.keys())
         else:
             result = Utils.create_sequence()
-
         return result
 
     # here: append, lookup
@@ -1877,6 +2097,13 @@ class Functions:
     #
     @staticmethod
     def exists(arg: Optional[Any]) -> bool:
+        """
+        Check if the argument is defined (not None).
+        Args:
+            arg (Optional[Any]): Argument to check.
+        Returns:
+            bool: True if argument is not None, False otherwise.
+        """
         return arg is not None
 
     #
@@ -1885,20 +2112,29 @@ class Functions:
     # @returns {*} - the array
     #
     @staticmethod
-    def spread(arg: Optional[Any]) -> Optional[Any]:
-        result = Utils.create_sequence()
-
+    def spread(arg: Optional[Any]) -> Optional[list]:
+        """
+        Split an object or dictionary into an array of objects with one property each.
+        Args:
+            arg (Optional[Any]): Object or dictionary to split.
+        Returns:
+            Optional[list]: Array of single-property objects, or None if input is None.
+        """
+        if arg is None:
+            return None
+        if isinstance(arg, dict):
+            return [{k: v} for k, v in arg.items()]
         if isinstance(arg, list):
-            # spread all of the items in the array
+            # If already a list, recursively spread each item if it's a dict
+            result = []
             for item in arg:
-                result = Functions.append(result, Functions.spread(item))
-        elif isinstance(arg, dict):
-            for k, v in arg.items():
-                obj = {k: v}
-                result.append(obj)
-        else:
-            return arg  # result = arg;
-        return result
+                if isinstance(item, dict):
+                    result.extend(Functions.spread(item))
+                else:
+                    result.append(item)
+            return result
+        # For other types, return as a single-item list
+        return [arg]
 
     #
     # Merges an array of objects into a single object.  Duplicate properties are
@@ -1908,11 +2144,20 @@ class Functions:
     #
     @staticmethod
     def merge(arg: Optional[Sequence[Mapping]]) -> Optional[dict]:
-        # undefined inputs always return undefined
+        """
+        Merge an array of dictionaries into a single dictionary. Later entries override earlier ones.
+        Args:
+            arg (Optional[Sequence[Mapping]]): Array of dictionaries to merge.
+        Returns:
+            Optional[dict]: Merged dictionary, or None if input is None.
+        """
         if arg is None:
             return None
-
-        return {k: v for obj in arg for k, v in obj.items()}
+        result = {}
+        for item in arg:
+            if isinstance(item, dict):
+                result.update(item)
+        return result
 
     #
     # Reverses the order of items in an array
@@ -1921,10 +2166,15 @@ class Functions:
     #
     @staticmethod
     def reverse(arr: Optional[Sequence]) -> Optional[Sequence]:
-        # undefined inputs always return undefined
+        """
+        Reverse the order of items in an array.
+        Args:
+            arr (Optional[Sequence]): Array to reverse.
+        Returns:
+            Optional[Sequence]: Reversed array or None if input is None.
+        """
         if arr is None:
             return None
-
         if len(arr) <= 1:
             return arr
 
@@ -1941,9 +2191,16 @@ class Functions:
     #
     @staticmethod
     def each(obj: Optional[Mapping], func: Any) -> Optional[list]:
+        """
+        Apply a function to each key/value pair in an object and return the results.
+        Args:
+            obj (Optional[Mapping]): Input object to iterate over.
+            func (Any): Function to apply to each key/value pair.
+        Returns:
+            Optional[list]: Resultant array or None if input is None.
+        """
         if obj is None:
             return None
-
         result = (
             res
             for res in (
@@ -1963,6 +2220,13 @@ class Functions:
     #
     @staticmethod
     def error(message: Optional[str]) -> NoReturn:
+        """
+        Raise a custom error with code 'D3137'.
+        Args:
+            message (Optional[str]): Message to attach to the error.
+        Raises:
+            JException: Always raised with code 'D3137'.
+        """
         raise JException(
             "D3137",
             -1,
@@ -1978,9 +2242,15 @@ class Functions:
     #
     @staticmethod
     def assert_fn(condition: Optional[bool]) -> None:
+        """
+        Assert that a condition is true, raising an error if not.
+        Args:
+            condition (Optional[bool]): Condition to evaluate.
+        Raises:
+            JException: If condition is null or false.
+        """
         if condition is Utils.NULL_VALUE:
             raise JException("T0410", -1)
-
         if not condition:
             raise JException("D3141", -1, "$assert() statement failed")
 
@@ -1991,12 +2261,17 @@ class Functions:
     #
     @staticmethod
     def type(value: Optional[Any]) -> Optional[str]:
+        """
+        Return the type of the input value as a string.
+        Args:
+            value (Optional[Any]): Input to check type.
+        Returns:
+            Optional[str]: Type of the input ('null', 'boolean', etc.) or None if input is None.
+        """
         if value is None:
             return None
-
         if value is Utils.NULL_VALUE:
             return "null"
-
         if isinstance(value, bool):
             return "boolean"
 
@@ -2023,21 +2298,23 @@ class Functions:
     #
     @staticmethod
     def sort(arr: Optional[Sequence], comparator: Optional[Any]) -> Optional[Sequence]:
+        """
+        Sort an array using merge sort (stable), with optional comparator function.
+        Args:
+            arr (Optional[Sequence]): Array to sort.
+            comparator (Optional[Any]): Comparator function.
+        Returns:
+            Optional[Sequence]: Sorted array or None if input is None.
+        """
         from src.jsonata.Functions.Comparator import Comparator
 
-        # undefined inputs always return undefined
         if arr is None:
             return None
-
         if len(arr) <= 1:
             return arr
-
         result = list(arr)
-
         if comparator is not None:
             comp = Comparator(comparator).compare
-            # functools already imported at module level
-
             result = sorted(result, key=functools.cmp_to_key(comp))
         else:
             result = sorted(result)
@@ -2050,13 +2327,17 @@ class Functions:
     #
     @staticmethod
     def shuffle(arr: Optional[Sequence]) -> Optional[Sequence]:
-        # undefined inputs always return undefined
+        """
+        Randomly shuffle the contents of an array.
+        Args:
+            arr (Optional[Sequence]): Input array.
+        Returns:
+            Optional[Sequence]: Shuffled array or None if input is None.
+        """
         if arr is None:
             return None
-
         if len(arr) <= 1:
             return arr
-
         result = list(arr)
         random.shuffle(result)
         return result
@@ -2068,10 +2349,15 @@ class Functions:
     #
     @staticmethod
     def distinct(arr: Optional[Any]) -> Optional[Any]:
-        # undefined inputs always return undefined
+        """
+        Return the values that appear in a sequence, with duplicates eliminated.
+        Args:
+            arr (Optional[Any]): Array or sequence of values.
+        Returns:
+            Optional[Any]: Sequence of distinct values or None if input is None.
+        """
         if arr is None:
             return None
-
         if not (isinstance(arr, list)) or len(arr) <= 1:
             return arr
 
@@ -2094,7 +2380,15 @@ class Functions:
     #
     @staticmethod
     def sift(arg: Optional[Mapping], func: Any) -> Optional[dict]:
-
+        """
+        Applies a predicate function to each key/value pair in an object, returning an object containing
+        only the key/value pairs that passed the predicate.
+        Args:
+            arg (Optional[Mapping]): The object to be sifted.
+            func (Any): The predicate function (lambda or native).
+        Returns:
+            Optional[dict]: Sifted object containing only key/value pairs that passed the predicate, or None if input is None or no matches.
+        """
         if arg is None:
             return None
 
@@ -2124,6 +2418,14 @@ class Functions:
     #
     @staticmethod
     def append(arg1: Optional[Any], arg2: Optional[Any]) -> Optional[Any]:
+        """
+        Append the second argument to the first. If either argument is not a list, it is converted to a list.
+        Args:
+            arg1 (Optional[Any]): First argument (array or object).
+            arg2 (Optional[Any]): Second argument (array or object).
+        Returns:
+            Optional[Any]: Appended arguments as a list, or None if both are None.
+        """
         # disregard undefined args
         if arg1 is None:
             return arg2
@@ -2135,9 +2437,17 @@ class Functions:
             arg1 = Utils.create_sequence(arg1)
         if not (isinstance(arg2, list)):
             arg2 = JList([arg2])
+        return arg1 + arg2
 
     @staticmethod
     def is_lambda(result: Optional[Any]) -> bool:
+        """
+        Check if the given result is a Jsonata lambda function.
+        Args:
+            result (Optional[Any]): Object to check.
+        Returns:
+            bool: True if result is a Jsonata lambda, False otherwise.
+        """
         return isinstance(result, Parser.Symbol) and result.jsonata_lambda
 
     #
@@ -2150,6 +2460,14 @@ class Functions:
     def lookup(
         input_: Union[Mapping, Optional[Sequence]], key: Optional[str]
     ) -> Optional[Any]:
+        """
+        Returns the value from an object for a given key. Handles nested lists and dicts.
+        Args:
+            input_ (Union[Mapping, Optional[Sequence]]): Object or array to search.
+            key (Optional[str]): Key to look up.
+        Returns:
+            Optional[Any]: Value of key in object or None if not found.
+        """
         # lookup the 'name' item in the input
         result = None
         if isinstance(input_, list):
@@ -2172,10 +2490,26 @@ class Functions:
 
     @staticmethod
     def test(a: Optional[str], b: Optional[str]) -> str:
+        """
+        Concatenates two strings.
+        Args:
+            a (Optional[str]): First string.
+            b (Optional[str]): Second string.
+        Returns:
+            str: Concatenated result.
+        """
         return a + b
 
     @staticmethod
     def get_function(clz: Optional[Type], name: Optional[str]) -> Optional[Any]:
+        """
+        Gets a function by name from a class.
+        Args:
+            clz (Optional[Type]): Class to search.
+            name (Optional[str]): Name of function.
+        Returns:
+            Optional[Any]: Function object or None if not found.
+        """
         if name is None:
             return None
         return getattr(clz, name)
@@ -2184,12 +2518,30 @@ class Functions:
     def call(
         clz: Optional[Type], name: Optional[str], args: Optional[Sequence]
     ) -> Optional[Any]:
+        """
+        Calls a function by name from a class with arguments.
+        Args:
+            clz (Optional[Type]): Class to search.
+            name (Optional[str]): Name of function.
+            args (Optional[Sequence]): Arguments to pass.
+        Returns:
+            Optional[Any]: Result of function call or None if not found.
+        """
         m = Functions.get_function(clz, name)
         nargs = len(inspect.signature(m).parameters)
         return Functions._call(m, nargs, args)
 
     @staticmethod
     def _call(m: Callable, nargs: int, args: Optional[Sequence]) -> Optional[Any]:
+        """
+        Internal helper to call a function with a fixed number of arguments, filling with None if needed.
+        Args:
+            m (Callable): Function to call.
+            nargs (int): Number of arguments expected.
+            args (Optional[Sequence]): Arguments to pass.
+        Returns:
+            Optional[Any]: Result of function call.
+        """
         call_args = list(args)
         while len(call_args) < nargs:
             # Add default arg null if not enough args were provided
@@ -2216,6 +2568,14 @@ class Functions:
     def datetime_to_millis(
         timestamp: Optional[str], picture: Optional[str]
     ) -> Optional[int]:
+        """
+        Converts an ISO 8601 timestamp to milliseconds since the epoch.
+        Args:
+            timestamp (Optional[str]): Timestamp to convert.
+            picture (Optional[str]): Format picture string (optional).
+        Returns:
+            Optional[int]: Milliseconds since epoch or None if input is None.
+        """
         # undefined inputs always return undefined
         if timestamp is None:
             return None

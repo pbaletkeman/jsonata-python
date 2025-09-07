@@ -1,3 +1,8 @@
+"""
+Signature subpackage initialization for Jsonata Python implementation.
+Imports all signature modules for function signatures.
+"""
+
 import os
 import glob
 

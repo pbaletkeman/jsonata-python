@@ -1,3 +1,8 @@
+"""
+Utils subpackage initialization for Jsonata Python implementation.
+Imports all utility modules for expression evaluation.
+"""
+
 import os
 import glob
 

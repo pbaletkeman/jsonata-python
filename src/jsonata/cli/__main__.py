@@ -1,4 +1,10 @@
 #
+"""
+jsonata.cli.__main__
+
+Entry point for the Pure Python JSONata command-line interface (CLI).
+Provides argument parsing, evaluation, and error handling for JSONata expressions.
+"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -26,10 +32,11 @@ import json
 import sys
 from typing import Any, Optional
 
-from Jsonata import Jsonata
-from JException import JException
-from Timebox.Timebox import Timebox
-from Functions import functions
+
+from src.jsonata.JException.JException import JException
+from src.jsonata.Jsonata import Jsonata
+from src.jsonata.Timebox.Timebox import Timebox
+from src.jsonata.Functions.Functions import Functions
 
 
 def get_options(argv: Optional[list[str]] = None) -> argparse.ArgumentParser:
@@ -107,6 +114,11 @@ def get_options(argv: Optional[list[str]] = None) -> argparse.ArgumentParser:
 
 
 class JsonataREPL(cmd.Cmd):
+    """
+    Interactive Read-Eval-Print Loop (REPL) for evaluating JSONata expressions against input documents and variable bindings.
+    Supports setting variables, showing bindings, quitting, and evaluating expressions interactively.
+    """
+
     prompt = "JSONata> "
     intro = "Enter an expression to have it evaluated."
 
@@ -116,8 +128,17 @@ class JsonataREPL(cmd.Cmd):
         self.bindings = bindings
 
     def jsonata_eval(self, text: str) -> Optional[Any]:
+        """
+        Evaluate a JSONata expression against the current document and bindings.
+        Args:
+            text: The JSONata expression string to evaluate.
+        Returns:
+            The result of the evaluation, or raises JException on error.
+        Raises:
+            JException: If evaluation fails.
+        """
         try:
-            j = Jsonata.Jsonata(text)
+            j = Jsonata(text)
             frame = j.create_frame()
             for k, v in self.bindings.items():
                 frame.bind(k, v)
@@ -162,6 +183,15 @@ class JsonataREPL(cmd.Cmd):
 
 
 def read_input(inp: str, format: str) -> str:
+    """
+    Parse input data according to the specified format.
+    Supports automatic detection, JSON parsing, or raw string input.
+    Args:
+        inp: The input data as a string.
+        format: The format to use ('auto', 'json', or 'string').
+    Returns:
+        Parsed input as a Python object (dict, list, or str).
+    """
     if format == "auto":
         try:
             return json.loads(inp)
@@ -174,6 +204,15 @@ def read_input(inp: str, format: str) -> str:
 
 
 def main(argv: Optional[list[str]] = None) -> int:
+    """
+    Main entry point for the JSONata CLI application.
+    Handles argument parsing, input/output management, expression evaluation, variable bindings, and performance timing.
+    Supports interactive REPL mode and error reporting.
+    Args:
+        argv: Optional list of command-line arguments.
+    Returns:
+        int: Exit code (0 for success, 1 for error).
+    """
     parser = get_options(argv)
     options = parser.parse_args(argv)
 
@@ -214,12 +253,12 @@ def main(argv: Optional[list[str]] = None) -> int:
         with open(options.input, "r", encoding=icharset) as fd:
             input = fd.read()
 
-    t0 = Timebox.Timebox.current_milli_time()
+    t0 = Timebox.current_milli_time()
 
     format = options.format
     doc = read_input(input, format)
 
-    t1 = Timebox.Timebox.current_milli_time()
+    t1 = Timebox.current_milli_time()
 
     if options.interactive:
         repl = JsonataREPL(doc, bindings)
@@ -227,18 +266,16 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 0
 
     try:
-        j = Jsonata.Jsonata.jsonata(expr)
+        j = Jsonata(expr)
         frame = j.create_frame()
         for k, v in bindings.items():
             frame.bind(k, v)
-
-        t2 = Timebox.Timebox.current_milli_time()
+        t2 = Timebox.current_milli_time()
 
         result = j.evaluate(doc, frame)
+        t3 = Timebox.current_milli_time()
 
-        t3 = Timebox.Timebox.current_milli_time()
-
-        s = functions.Functions.string(result, prettify)
+        s = Functions.string(result, prettify)
 
         output = options.output
         if output is None:
@@ -247,7 +284,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             with open(output, "w", encoding=ocharset) as fd:
                 fd.write(s)
 
-        t4 = Timebox.Timebox.current_milli_time()
+        t4 = Timebox.current_milli_time()
 
         if options.time:
             sys.stderr.write(

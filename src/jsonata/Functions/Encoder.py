@@ -1,3 +1,8 @@
+"""
+Encoder module for JSONata Python implementation.
+Provides a custom JSON encoder for handling decimals and special types in JSONata expressions.
+"""
+
 import decimal
 import json
 

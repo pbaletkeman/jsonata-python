@@ -1,4 +1,9 @@
 #
+"""
+MatcherPartLetters module for JSONata Python implementation.
+Provides utilities for matching alphabetic letter sequences in JSONata expressions, supporting upper/lower case.
+Adapted from jsonata-java and JSONata4Java projects.
+"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")

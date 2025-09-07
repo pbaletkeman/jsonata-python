@@ -1,4 +1,9 @@
 ﻿#
+"""
+Parser module for JSONata Python implementation.
+Handles parsing of JSONata expressions, including infix, prefix, and function operators.
+Adapted from jsonata-java and IBM JSONata projects, supporting advanced query and transformation syntax.
+"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -379,7 +384,7 @@ class Parser:
             # only the last expression in the block
             length = len(expr.expressions)
             if length > 0:
-                if not (isinstance(expr.expressions, list)):
+                if not isinstance(expr.expressions, list):
                     expr.expressions = [expr.expressions]
                 expr.expressions[length - 1] = self.tail_call_optimize(
                     expr.expressions[length - 1]
@@ -484,13 +489,18 @@ class Parser:
                     index -= 1
                 slot = self.seek_parent(step, slot)
 
-    # post-parse stage
-    # the purpose of this is to add as much semantic value to the parse tree as possible
-    # in order to simplify the work of the evaluator.
-    # This includes flattening the parts of the AST representing location paths,
-    # converting them to arrays of steps which in turn may contain arrays of predicates.
-    # following this, nodes containing '.' and '[' should be eliminated from the AST.
     def process_ast(self, expr: Optional[Symbol]) -> Optional[Symbol]:
+        """
+        Post-process the parsed Abstract Syntax Tree (AST) to enrich it with semantic information for evaluation.
+        This method flattens location path nodes, converts them to arrays of steps and predicates, and eliminates unnecessary nodes.
+        It also flags singleton arrays, resolves ancestry relationships, and transforms various expression types for easier evaluation.
+        Args:
+            expr: The root Symbol node of the parsed AST.
+        Returns:
+            The processed Symbol node with enhanced semantic structure, or None if input is None.
+        Raises:
+            JException: For invalid or unsupported AST structures.
+        """
         result = expr
         if expr is None:
             return None
@@ -871,7 +881,14 @@ class Parser:
         return result
 
     def object_parser(self, left: Optional[Symbol]) -> Symbol:
-
+        """
+        Parse an object constructor expression, handling both prefix (unary) and infix (binary) forms.
+        This method builds an array of name/value pairs for the object, advancing through tokens and handling commas and colons.
+        Args:
+            left: The left Symbol node if parsing in infix (binary) form, or None for prefix (unary) form.
+        Returns:
+            Symbol: The constructed object Symbol node, with appropriate type and child objects.
+        """
         res = Infix(self, "{") if left is not None else Prefix(self, "{")
 
         a = []
@@ -898,6 +915,17 @@ class Parser:
         return res
 
     def parse(self, jsonata: Optional[str]) -> Symbol:
+        """
+        Parse a JSONata expression string and return the processed Abstract Syntax Tree (AST).
+        This method tokenizes the input, advances through tokens, builds the syntax tree, and post-processes the AST for semantic enrichment.
+        It also handles errors and validates top-level ancestry constraints.
+        Args:
+            jsonata: The JSONata expression string to parse.
+        Returns:
+            Symbol: The root node of the processed AST.
+        Raises:
+            JException: For syntax errors or invalid top-level ancestry.
+        """
         self.source = jsonata
 
         # now invoke the tokenizer and the parser and return the syntax tree

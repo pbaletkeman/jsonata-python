@@ -1,4 +1,9 @@
 #
+"""
+Formats module for JSONata Python implementation.
+Defines enumeration of supported formatting types for numbers and sequences in JSONata expressions.
+Adapted from jsonata-java and JSONata4Java projects.
+"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")

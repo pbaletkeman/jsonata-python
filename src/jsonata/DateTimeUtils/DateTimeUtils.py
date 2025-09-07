@@ -1,4 +1,10 @@
 ﻿#
+"""
+DateTimeUtils module for JSONata Python implementation.
+Provides utilities and classes for date/time formatting, parsing, and manipulation,
+adapted from jsonata-java and JSONata4Java projects. Includes support for custom formats,
+picture strings, time zones, and advanced date/time operations used in JSONata expressions.
+"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")

@@ -1,4 +1,9 @@
 ﻿#
+"""
+Timebox module for JSONata Python implementation.
+Provides runtime protection for expression evaluation, enforcing timeouts and maximum recursion depth to prevent runaway execution.
+Adapted from jsonata-java project.
+"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")

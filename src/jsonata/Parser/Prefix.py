@@ -1,3 +1,8 @@
+"""
+Prefix module for JSONata Python implementation.
+Handles prefix operators (e.g., -x, !x) in JSONata expressions, providing parsing logic for unary operations.
+"""
+
 # match prefix operators
 # <operator> <expression>
 from src.jsonata.Parser.Symbol import Symbol

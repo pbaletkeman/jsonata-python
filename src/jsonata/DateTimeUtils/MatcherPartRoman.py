@@ -1,4 +1,9 @@
 #
+"""
+MatcherPartRoman module for JSONata Python implementation.
+Provides utilities for matching and parsing Roman numerals in JSONata expressions.
+Adapted from jsonata-java and JSONata4Java projects.
+"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -33,6 +38,11 @@ from src.jsonata.DateTimeUtils.MatcherPart import MatcherPart
 
 
 class MatcherPartRoman(MatcherPart):
+    """
+    Matcher part for Roman numerals, supporting matching and parsing in JSONata expressions.
+    Converts Roman numeral strings to decimal integers, with case sensitivity.
+    """
+
     _is_upper: bool
 
     def __init__(self, regex, is_upper):

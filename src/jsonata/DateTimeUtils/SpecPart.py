@@ -1,4 +1,9 @@
 #
+"""
+SpecPart module for JSONata Python implementation.
+Provides utilities for handling parts of date/time picture format specifications in JSONata expressions.
+Adapted from jsonata-java and JSONata4Java projects.
+"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")

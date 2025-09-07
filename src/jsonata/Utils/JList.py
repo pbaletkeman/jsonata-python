@@ -1,4 +1,15 @@
+"""
+JList module for Jsonata Python implementation.
+Defines the JList class, a specialized list with flags for Jsonata evaluation semantics.
+"""
+
+
 class JList(list):
+    """
+    Specialized list for Jsonata evaluation, supporting flags for sequence, tuple streams, singleton handling, and construction semantics.
+    Extends Python's built-in list with additional attributes used during expression evaluation.
+    """
+
     sequence: bool
     outer_wrapper: bool
     tuple_stream: bool

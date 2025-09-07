@@ -1,3 +1,8 @@
+"""
+Tokenizer subpackage initialization for Jsonata Python implementation.
+Imports all tokenizer modules for parsing expressions.
+"""
+
 import os
 import glob
 

@@ -1,3 +1,8 @@
+"""
+PrefixObjectTransformer module for JSONata Python implementation.
+Handles the prefix object transformer operator (|), enabling object transformation, updates, and deletions in JSONata expressions.
+"""
+
 from src.jsonata.Parser.Parser import Parser
 from src.jsonata.Parser.Prefix import Prefix
 

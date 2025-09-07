@@ -1,4 +1,8 @@
 ﻿#
+"""
+Jsonata Python implementation: Main engine for evaluating and transforming JSONata expressions.
+Provides core logic for query, transformation, grouping, sorting, filtering, and advanced expression features.
+"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -265,7 +269,7 @@ class Jsonata:
         if expr.keep_singleton_array:
 
             # If we only got an ArrayList, convert it so we can set the keepSingleton flag
-            if not (isinstance(result_sequence, JList)):
+            if not isinstance(result_sequence, JList):
                 result_sequence = JList(result_sequence)
 
             # if the array is explicitly constructed in the expression and marked to promote singleton sequences to array
@@ -361,6 +365,16 @@ class Jsonata:
         input: Any,
         environment: Optional[Frame],
     ) -> Any:
+        """
+        Evaluate a sequence of stages (filters or index assignments) on input data.
+        Applies each stage in order, modifying the input as required by filter or index type.
+        Args:
+            stages: List of stage Symbol objects (filter or index).
+            input: The input data to process through the stages.
+            environment: The environment frame for evaluation.
+        Returns:
+            The result after applying all stages to the input data.
+        """
         result = input
         for stage in stages:
             if stage.type == "filter":
@@ -412,7 +426,7 @@ class Jsonata:
             res = self.eval(expr, tuple_binding["@"], step_env)
             # res is the binding sequence for the output tuple stream
             if res is not None:
-                if not (isinstance(res, list)):
+                if not isinstance(res, list):
                     res = [res]
                 for bb, item in enumerate(res):
                     tuple = dict(tuple_binding)
@@ -452,7 +466,7 @@ class Jsonata:
         results = Utils.create_sequence()
         if isinstance(input_item, JList) and input_item.tuple_stream:
             results.tuple_stream = True
-        if not (isinstance(input_item, list)):
+        if not isinstance(input_item, list):
             input_item = Utils.create_sequence(input_item)
         if predicate.type == "number":
             index = int(predicate.value)  # round it down - was Math.floor
@@ -521,7 +535,7 @@ class Jsonata:
             try:
                 return self.evaluate_boolean_expression(lhs, evalrhs, op)
             except Exception as err:
-                if not (isinstance(err, JException)):
+                if not isinstance(err, JException):
                     raise JException("Unexpected", expr.position)
                 # err.position = expr.position
                 # err.token = op
@@ -563,61 +577,51 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Evaluate a unary expression (negation, array constructor, or object constructor) against input data.
+        Args:
+            expr: JSONata unary expression symbol.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+        Returns:
+            The result of the unary operation, such as negated value, constructed array, or grouped object.
+        Raises:
+            JException: If the operation is invalid or input is not numeric for negation.
+        """
         result = None
 
         value = str(expr.value)
+        if value == "-":
+            result = self.eval(expr.expression, input_item, environment)
+            if result is None:
+                result = None
+            elif Utils.is_numeric(result):
+                result = Utils.convert_number(-float(result))
+            else:
+                raise JException("D1002", expr.position, expr.value, result)
+        elif value == "[":
+            # array constructor - evaluate each item
+            result = Utils.JList()  # [];
+            idx = 0
+            for item in expr.expressions:
+                environment.is_parallel_call = idx > 0
+                value = self.eval(item, input_item, environment)
+                if value is not None:
+                    if str(item.value) == "[":
+                        result.append(value)
+                    else:
+                        result = Functions.append(result, value)
+                idx += 1
+            if expr.consarray:
+                if not isinstance(result, Utils.JList):
+                    result = Utils.JList(result)
+                # System.out.println("const "+result)
+                result.cons = True
+        elif value == "{":
+            # object constructor - apply grouping
+            result = self.evaluate_group_expression(expr, input_item, environment)
 
-        def evaluate_unary(
-            self,
-            expr: Optional[Symbol],
-            input_item: Optional[Any],
-            environment: Optional[Frame],
-        ) -> Optional[Any]:
-            """
-            Evaluate a unary expression (negation, array constructor, or object constructor) against input data.
-            Args:
-                expr: JSONata unary expression symbol.
-                input_item: Input data to evaluate against.
-                environment: Environment frame.
-            Returns:
-                The result of the unary operation, such as negated value, constructed array, or grouped object.
-            Raises:
-                JException: If the operation is invalid or input is not numeric for negation.
-            """
-            result = None
-
-            value = str(expr.value)
-            if value == "-":
-                result = self.eval(expr.expression, input_item, environment)
-                if result is None:
-                    result = None
-                elif Utils.is_numeric(result):
-                    result = Utils.convert_number(-float(result))
-                else:
-                    raise JException("D1002", expr.position, expr.value, result)
-            elif value == "[":
-                # array constructor - evaluate each item
-                result = Utils.JList()  # [];
-                idx = 0
-                for item in expr.expressions:
-                    environment.is_parallel_call = idx > 0
-                    value = self.eval(item, input_item, environment)
-                    if value is not None:
-                        if str(item.value) == "[":
-                            result.append(value)
-                        else:
-                            result = Functions.append(result, value)
-                    idx += 1
-                if expr.consarray:
-                    if not (isinstance(result, Utils.JList)):
-                        result = Utils.JList(result)
-                    # System.out.println("const "+result)
-                    result.cons = True
-            elif value == "{":
-                # object constructor - apply grouping
-                result = self.evaluate_group_expression(expr, input_item, environment)
-
-            return result
+        return result
 
     def evaluate_name(
         self,
@@ -642,6 +646,13 @@ class Jsonata:
     # @returns {*} Evaluated input data
     #
     def evaluate_literal(self, expr: Optional[Symbol]) -> Optional[Any]:
+        """
+        Evaluate a literal expression and return its value.
+        Args:
+            expr: JSONata expression containing the literal value.
+        Returns:
+            The value of the literal, or Utils.NULL_VALUE if not set.
+        """
         return expr.value if expr.value is not None else Utils.NULL_VALUE
 
     #
@@ -753,7 +764,7 @@ class Jsonata:
             results: List to accumulate descendants.
         """
         # this is the equivalent of //* in XPath
-        if not (isinstance(input_item, list)):
+        if not isinstance(input_item, list):
             results.append(input_item)
         if isinstance(input_item, list):
             for member in input_item:
@@ -944,7 +955,7 @@ class Jsonata:
             # if either side is undefined, the result is false
             return False
 
-        if not (isinstance(rhs, list)):
+        if not isinstance(rhs, list):
             rhs = [rhs]
 
         for item in rhs:
@@ -1055,7 +1066,7 @@ class Jsonata:
             else False
         )
         # group the input_item sequence by "key" expression
-        if not (isinstance(input_item, list)):
+        if not isinstance(input_item, list):
             input_item = Utils.create_sequence(input_item)
 
         # if the array is empty, add an undefined entry to enable literal JSON object to be generated
@@ -1071,7 +1082,7 @@ class Jsonata:
             for pairIndex, pair in enumerate(expr.lhs_object):
                 key = self.eval(pair[0], item["@"] if reduce else item, env)
                 # key has to be a string
-                if key is not None and not (isinstance(key, str)):
+                if key is not None and not isinstance(key, str):
                     raise JException("T1003", expr.position, key)
 
                 if key is not None:
@@ -1125,7 +1136,7 @@ class Jsonata:
         Returns:
             Merged dictionary or original value if not a list.
         """
-        if not (isinstance(tuple_stream, list)):
+        if not isinstance(tuple_stream, list):
             return tuple_stream
 
         result = dict(tuple_stream[0])
@@ -1157,9 +1168,9 @@ class Jsonata:
         """
         result = None
 
-        if lhs is not None and (isinstance(lhs, bool) or not (isinstance(lhs, int))):
+        if lhs is not None and isinstance(lhs, bool) or not isinstance(lhs, int):
             raise JException("T2003", -1, lhs)
-        if rhs is not None and (isinstance(rhs, bool) or not (isinstance(rhs, int))):
+        if rhs is not None and (isinstance(rhs, bool) or not isinstance(rhs, int)):
             raise JException("T2004", -1, rhs)
 
         if rhs is None or lhs is None:

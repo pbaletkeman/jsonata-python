@@ -1,4 +1,9 @@
 ﻿#
+"""
+Tokenizer module for JSONata Python implementation.
+Provides lexical analysis for JSONata expressions, converting input strings into tokens for parsing.
+Adapted from jsonata-java and IBM JSONata projects.
+"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")

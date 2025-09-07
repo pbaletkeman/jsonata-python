@@ -1,4 +1,9 @@
 #
+"""
+Format module for JSONata Python implementation.
+Provides date/time formatting utilities and classes, supporting custom formats and grouping separators for JSONata expressions.
+Adapted from jsonata-java and JSONata4Java projects.
+"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
