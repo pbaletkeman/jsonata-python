@@ -38,8 +38,6 @@ from typing import (
     MutableSequence,
     Optional,
     Sequence,
-    Type,
-    MutableMapping,
     Mapping,
 )
 from src.jsonata.Jsonata.GroupEntry import GroupEntry
@@ -49,6 +47,7 @@ from src.jsonata.Parser.Symbol import Symbol
 from src.jsonata.JException.JException import JException
 from src.jsonata.Timebox.Timebox import Timebox
 from src.jsonata.Utils.Utils import Utils, JList
+from src.jsonata.Utils.RangeList import RangeList
 from src.jsonata.Functions.Functions import Functions
 from src.jsonata.Jsonata.Frame import Frame
 from src.jsonata.Jsonata.JFunction import JFunction
@@ -68,6 +67,12 @@ class Jsonata:
     """
 
     static_frame = None  # = createFrame(null);
+
+    def __init__(self, parser=None):
+        # Ensure parser is always available
+        from src.jsonata.Parser.Parser import Parser
+
+        self.parser = parser if parser is not None else Parser()
 
     #
     # JFunction callable Lambda interface
@@ -99,6 +104,15 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Internal evaluation of a JSONata expression against input data and environment.
+        Args:
+            expr: JSONata expression symbol.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+        Returns:
+            The result of the evaluation.
+        """
         result = None
 
         # Store the current input_item
@@ -275,6 +289,14 @@ class Jsonata:
     def create_frame_from_tuple(
         self, environment: Optional[Frame], tuple_data: Optional[Mapping[str, Any]]
     ) -> Frame:
+        """
+        Create a new frame and bind tuple data to it.
+        Args:
+            environment: The enclosing environment frame.
+            tuple_data: Dictionary of properties to bind.
+        Returns:
+            Frame: The new frame with bindings.
+        """
         frame = self.create_frame(environment)
         if tuple_data is not None:
             for prop, val in tuple_data.items():
@@ -323,9 +345,7 @@ class Jsonata:
         else:
             # flatten the sequence
             for res in result:
-                if not (isinstance(res, list)) or (
-                    isinstance(res, Utils.JList) and res.cons
-                ):
+                if not (isinstance(res, list)) or (isinstance(res, JList) and res.cons):
                     # it's not an array - just push into the result sequence
                     result_sequence.append(res)
                 else:
@@ -397,7 +417,7 @@ class Jsonata:
                 for bb, item in enumerate(res):
                     tuple = dict(tuple_binding)
                     # Object.assign(tuple, tupleBindings[ee])
-                    if (isinstance(res, Utils.JList)) and res.tuple_stream:
+                    if (isinstance(res, JList)) and res.tuple_stream:
                         tuple.update(item)
                     else:
                         if expr.focus is not None:
@@ -449,7 +469,7 @@ class Jsonata:
             for index, item in enumerate(input_item):
                 context = item
                 env = environment
-                if isinstance(input_item, Utils.JList) and input_item.tuple_stream:
+                if isinstance(input_item, JList) and input_item.tuple_stream:
                     context = item["@"]
                     env = self.create_frame_from_tuple(environment, item)
                 res = self.eval(predicate, context, env)
@@ -482,6 +502,15 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Evaluate a binary expression (arithmetic, logical, comparison, or inclusion) against input data.
+        Args:
+            expr: JSONata binary expression symbol.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+        Returns:
+            The result of the binary operation, or raises JException for errors.
+        """
         lhs = self.eval(expr.lhs, input_item, environment)
         op = str(expr.value)
 
@@ -537,52 +566,74 @@ class Jsonata:
         result = None
 
         value = str(expr.value)
-        if value == "-":
-            result = self.eval(expr.expression, input_item, environment)
-            if result is None:
-                result = None
-            elif Utils.is_numeric(result):
-                result = Utils.convert_number(-float(result))
-            else:
-                raise JException("D1002", expr.position, expr.value, result)
-        elif value == "[":
-            # array constructor - evaluate each item
-            result = Utils.JList()  # [];
-            idx = 0
-            for item in expr.expressions:
-                environment.is_parallel_call = idx > 0
-                value = self.eval(item, input_item, environment)
-                if value is not None:
-                    if str(item.value) == "[":
-                        result.append(value)
-                    else:
-                        result = Functions.append(result, value)
-                idx += 1
-            if expr.consarray:
-                if not (isinstance(result, Utils.JList)):
-                    result = Utils.JList(result)
-                # System.out.println("const "+result)
-                result.cons = True
-        elif value == "{":
-            # object constructor - apply grouping
-            result = self.evaluate_group_expression(expr, input_item, environment)
 
-        return result
+        def evaluate_unary(
+            self,
+            expr: Optional[Symbol],
+            input_item: Optional[Any],
+            environment: Optional[Frame],
+        ) -> Optional[Any]:
+            """
+            Evaluate a unary expression (negation, array constructor, or object constructor) against input data.
+            Args:
+                expr: JSONata unary expression symbol.
+                input_item: Input data to evaluate against.
+                environment: Environment frame.
+            Returns:
+                The result of the unary operation, such as negated value, constructed array, or grouped object.
+            Raises:
+                JException: If the operation is invalid or input is not numeric for negation.
+            """
+            result = None
 
-    #
-    # Evaluate name object against input data
-    # @param {Object} expr - JSONata expression
-    # @param {Object} input - Input data to evaluate against
-    # @param {Object} environment - Environment
-    # @returns {*} Evaluated input data
-    #
+            value = str(expr.value)
+            if value == "-":
+                result = self.eval(expr.expression, input_item, environment)
+                if result is None:
+                    result = None
+                elif Utils.is_numeric(result):
+                    result = Utils.convert_number(-float(result))
+                else:
+                    raise JException("D1002", expr.position, expr.value, result)
+            elif value == "[":
+                # array constructor - evaluate each item
+                result = Utils.JList()  # [];
+                idx = 0
+                for item in expr.expressions:
+                    environment.is_parallel_call = idx > 0
+                    value = self.eval(item, input_item, environment)
+                    if value is not None:
+                        if str(item.value) == "[":
+                            result.append(value)
+                        else:
+                            result = Functions.append(result, value)
+                    idx += 1
+                if expr.consarray:
+                    if not (isinstance(result, Utils.JList)):
+                        result = Utils.JList(result)
+                    # System.out.println("const "+result)
+                    result.cons = True
+            elif value == "{":
+                # object constructor - apply grouping
+                result = self.evaluate_group_expression(expr, input_item, environment)
+
+            return result
+
     def evaluate_name(
         self,
         expr: Optional[Symbol],
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
-        # lookup the "name" item in the input_item
+        """
+        Evaluate a name expression by looking up the named item in the input_item.
+        Args:
+            expr: JSONata expression representing the name.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+        Returns:
+            The value associated with the name in input_item.
+        """
         return Functions.lookup(input_item, str(expr.value))
 
     #
@@ -602,12 +653,16 @@ class Jsonata:
     def evaluate_wildcard(
         self, expr: Optional[Symbol], input_item: Optional[Any]
     ) -> Optional[Any]:
+        """
+        Evaluate wildcard expression against input_item data.
+        Args:
+            expr: JSONata expression representing the wildcard.
+            input_item: Input data to evaluate against.
+        Returns:
+            Sequence of values matching the wildcard expression.
+        """
         results = Utils.create_sequence()
-        if (
-            (isinstance(input_item, Utils.JList))
-            and input_item.outer_wrapper
-            and input_item
-        ):
+        if (isinstance(input_item, JList)) and input_item.outer_wrapper and input_item:
             input_item = input_item[0]
         if input_item is not None and isinstance(input_item, dict):
             for value in input_item.values():
@@ -638,6 +693,14 @@ class Jsonata:
     # @returns {Array} - the flattened array
     #
     def flatten(self, arg: Any, flattened: Optional[MutableSequence]) -> Any:
+        """
+        Flatten a nested list into a single list.
+        Args:
+            arg: The array or value to flatten.
+            flattened: The list to accumulate results (optional).
+        Returns:
+            The flattened list.
+        """
         if flattened is None:
             flattened = []
         if isinstance(arg, list):
@@ -656,6 +719,14 @@ class Jsonata:
     def evaluate_descendants(
         self, expr: Optional[Symbol], input_item: Optional[Any]
     ) -> Optional[Any]:
+        """
+        Evaluate all descendants of the input_item for a JSONata expression.
+        Args:
+            expr: JSONata expression representing the descendant operation.
+            input_item: Input data to evaluate against.
+        Returns:
+            The descendants as a sequence or single value.
+        """
         result = None
         result_sequence = Utils.create_sequence()
         if input_item is not None:
@@ -675,6 +746,12 @@ class Jsonata:
     def recurse_descendants(
         self, input_item: Optional[Any], results: MutableSequence
     ) -> None:
+        """
+        Recursively collect all descendants of an input item.
+        Args:
+            input_item: The input data (list or dict).
+            results: List to accumulate descendants.
+        """
         # this is the equivalent of //* in XPath
         if not (isinstance(input_item, list)):
             results.append(input_item)
@@ -692,9 +769,21 @@ class Jsonata:
     # @param {Object} op - opcode
     # @returns {*} Result
     #
+
     def evaluate_numeric_expression(
         self, lhs: Optional[Any], rhs: Optional[Any], op: Optional[str]
     ) -> Optional[Any]:
+        """
+        Evaluate a numeric expression using the provided operator.
+        Args:
+            lhs: Left-hand side value (number).
+            rhs: Right-hand side value (number).
+            op: Operator as a string ('+', '-', '*', '/', '%').
+        Returns:
+            The result of the numeric operation, or None if either side is undefined.
+        Raises:
+            JException: If lhs or rhs is not numeric.
+        """
         result = 0
 
         if lhs is not None and not Utils.is_numeric(lhs):
@@ -732,6 +821,15 @@ class Jsonata:
     def evaluate_equality_expression(
         self, lhs: Optional[Any], rhs: Optional[Any], op: Optional[str]
     ) -> Optional[Any]:
+        """
+        Evaluate equality expression between two values.
+        Args:
+            lhs: Left-hand side value.
+            rhs: Right-hand side value.
+            op: Operator as a string ('=', '!=').
+        Returns:
+            True or False depending on equality, or False if either side is undefined.
+        """
         if lhs is None or rhs is None:
             # if either side is undefined, the result is false
             return False
@@ -761,6 +859,17 @@ class Jsonata:
     def evaluate_comparison_expression(
         self, lhs: Optional[Any], rhs: Optional[Any], op: Optional[str]
     ) -> Optional[Any]:
+        """
+        Evaluate comparison expression between two values.
+        Args:
+            lhs: Left-hand side value.
+            rhs: Right-hand side value.
+            op: Operator as a string ('<', '<=', '>', '>=').
+        Returns:
+            The result of the comparison, or None if either side is undefined.
+        Raises:
+            JException: If values are not comparable or types mismatch.
+        """
         result = None
 
         # type checks
@@ -821,6 +930,14 @@ class Jsonata:
     def evaluate_includes_expression(
         self, lhs: Optional[Any], rhs: Optional[Any]
     ) -> Any:
+        """
+        Evaluate inclusion operator to check if lhs is a member of rhs.
+        Args:
+            lhs: Value to check for inclusion.
+            rhs: List or value to check against.
+        Returns:
+            True if lhs in rhs, False otherwise.
+        """
         result = False
 
         if lhs is None or rhs is None:
@@ -851,6 +968,15 @@ class Jsonata:
         evalrhs: Callable[[], Optional[Any]],
         op: Optional[str],
     ) -> Optional[Any]:
+        """
+        Evaluate a boolean expression ('and', 'or') between lhs and rhs.
+        Args:
+            lhs: Left-hand side value.
+            evalrhs: Callable to evaluate right-hand side value.
+            op: Operator as a string ('and', 'or').
+        Returns:
+            The result of the boolean operation.
+        """
         result = None
 
         l_bool = Jsonata.boolize(lhs)
@@ -863,6 +989,13 @@ class Jsonata:
 
     @staticmethod
     def boolize(value: Optional[Any]) -> bool:
+        """
+        Convert a value to its boolean representation using Functions.to_boolean.
+        Args:
+            value: The value to convert.
+        Returns:
+            False if the conversion result is None, otherwise the boolean value.
+        """
         booled_value = Functions.to_boolean(value)
         return False if booled_value is None else booled_value
 
@@ -873,6 +1006,14 @@ class Jsonata:
     # @returns {string|*} Concatenated string
     #
     def evaluate_string_concat(self, lhs: Optional[Any], rhs: Optional[Any]) -> str:
+        """
+        Concatenate two values as strings.
+        Args:
+            lhs: Left-hand side value.
+            rhs: Right-hand side value.
+        Returns:
+            Concatenated string result.
+        """
         lstr = ""
         rstr = ""
         if lhs is not None:
@@ -897,11 +1038,20 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Any:
+        """
+        Evaluate a group expression, grouping input items by key and evaluating values.
+        Args:
+            expr: JSONata group expression.
+            input_item: Input data to group.
+            environment: Environment frame.
+        Returns:
+            Dictionary of grouped results.
+        """
         result = {}
         groups = {}
         reduce = (
             True
-            if (isinstance(input_item, Utils.JList)) and input_item.tuple_stream
+            if (isinstance(input_item, JList)) and input_item.tuple_stream
             else False
         )
         # group the input_item sequence by "key" expression
@@ -929,7 +1079,7 @@ class Jsonata:
                     if groups.get(key) is not None:
                         # a value already exists in this slot
                         if groups[key].exprIndex != pairIndex:
-                            # this key has been generated by another expression in this group
+                            # this key has been generated by another expression in the group
                             # when multiple key expressions evaluate to the same key, then error D1009 must be thrown
                             raise JException("D1009", expr.position, key)
 
@@ -968,12 +1118,18 @@ class Jsonata:
         return result
 
     def reduce_tuple_stream(self, tuple_stream: Optional[Any]) -> Optional[Any]:
+        """
+        Reduce a tuple stream to a single dictionary by merging items.
+        Args:
+            tuple_stream: List of dictionaries to merge.
+        Returns:
+            Merged dictionary or original value if not a list.
+        """
         if not (isinstance(tuple_stream, list)):
             return tuple_stream
 
         result = dict(tuple_stream[0])
 
-        # Object.assign(result, tuple_stream[0])
         for ii in range(1, len(tuple_stream)):
             el = tuple_stream[ii]
             for k, v in el.items():
@@ -989,6 +1145,16 @@ class Jsonata:
     def evaluate_range_expression(
         self, lhs: Optional[Any], rhs: Optional[Any]
     ) -> Optional[Any]:
+        """
+        Evaluate a range expression to produce a list of integers from lhs to rhs.
+        Args:
+            lhs: Left-hand side integer value.
+            rhs: Right-hand side integer value.
+        Returns:
+            List of integers in the range, or None if invalid.
+        Raises:
+            JException: If lhs or rhs is not a valid integer or out of bounds.
+        """
         result = None
 
         if lhs is not None and (isinstance(lhs, bool) or not (isinstance(lhs, int))):
@@ -1014,7 +1180,7 @@ class Jsonata:
         if size > 1e7:
             raise JException("D2014", -1, size)
 
-        return Utils.RangeList(lhs, rhs + 1)
+        return RangeList(lhs, rhs + 1)
 
     #
     # Evaluate bind expression against input_item data
@@ -1030,6 +1196,15 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Evaluate a bind expression, assigning the result of RHS to the LHS variable in the environment.
+        Args:
+            expr: JSONata bind expression.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+        Returns:
+            The value assigned to the variable.
+        """
         # The RHS is the expression to evaluate
         # The LHS is the name of the variable to bind to - should be a VARIABLE token (enforced by parser)
         value = self.eval(expr.rhs, input_item, environment)
@@ -1050,6 +1225,15 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Evaluate a conditional (if-then-else) expression.
+        Args:
+            expr: JSONata condition expression.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+        Returns:
+            The result of the then or else branch, or None.
+        """
         result = None
         condition = self.eval(expr.condition, input_item, environment)
         if Jsonata.boolize(condition):
@@ -1072,6 +1256,15 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Evaluate a block expression, executing each sub-expression in a new frame.
+        Args:
+            expr: JSONata block expression.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+        Returns:
+            The result of the last sub-expression in the block.
+        """
         result = None
         # create a new frame to limit the scope of variable assignments
         # TODO, only do this if the post-parse stage has flagged this as required
@@ -1089,6 +1282,13 @@ class Jsonata:
     # @returns {functions.Function} Higher order Object representing prepared regex
     #
     def evaluate_regex(self, expr: Optional[Symbol]) -> Optional[Any]:
+        """
+        Prepare and return a regex object from the given expression.
+        Args:
+            expr: Expression containing regex.
+        Returns:
+            Compiled regex or value.
+        """
         # Note: in Java we just use the compiled regex Pattern
         # The apply functions need to take care to evaluate
         return expr.value
@@ -1106,6 +1306,15 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Evaluate a variable expression, looking up its value in the environment.
+        Args:
+            expr: JSONata variable expression.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+        Returns:
+            The value of the variable, or context value if empty string.
+        """
         # lookup the variable value in the environment
         result = None
         # if the variable name is empty string, then it refers to context value
@@ -1113,7 +1322,7 @@ class Jsonata:
             # Empty string == "$" !
             result = (
                 input_item[0]
-                if isinstance(input_item, Utils.JList) and input_item.outer_wrapper
+                if isinstance(input_item, JList) and input_item.outer_wrapper
                 else input_item
             )
         else:
@@ -1136,13 +1345,22 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Evaluate a sort expression, ordering input items by the given criteria.
+        Args:
+            expr: JSONata sort expression.
+            input_item: Input data to sort.
+            environment: Environment frame.
+        Returns:
+            Ordered sequence of input items.
+        """
         result = None
 
         # evaluate the lhs, then sort the results in order according to rhs expression
         lhs = input_item
         is_tuple_sort = (
             True
-            if (isinstance(input_item, Utils.JList) and input_item.tuple_stream)
+            if (isinstance(input_item, JList) and input_item.tuple_stream)
             else False
         )
 
@@ -1176,7 +1394,15 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
-        # create a Object to implement the transform definition
+        """
+        Create a transformer function from the given expression.
+        Args:
+            expr: AST for operator.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+        Returns:
+            Transformer function as JFunction.
+        """
         transformer = Transformer(self, expr, environment)
         return JFunction(transformer, "<(oa):o>")
 
@@ -1186,6 +1412,11 @@ class Jsonata:
 
     @staticmethod
     def chain_ast() -> Optional[Symbol]:
+        """
+        Return the parsed AST for function composition (chaining).
+        Returns:
+            Symbol: The parsed AST representing function composition.
+        """
         if Jsonata._chain_ast is None:
             # only create on demand
             Jsonata._chain_ast = (Parser()).parse(
@@ -1207,6 +1438,15 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Apply the object on the RHS using the sequence on the LHS as the first argument.
+        Args:
+            expr: JSONata expression.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+        Returns:
+            Evaluated input_item data.
+        """
         result = None
 
         lhs = self.eval(expr.lhs, input_item, environment)
@@ -1239,7 +1479,7 @@ class Jsonata:
         Args:
             o: Object to check.
         Returns:
-            True if function-like, False otherwise.
+            bool: True if function-like, False otherwise.
         """
         return (
             Utils.is_function(o)
@@ -1256,6 +1496,11 @@ class Jsonata:
     # @return
     #
     def get_per_thread_instance(self):
+        """
+        Get a per-thread instance of Jsonata for thread safety.
+        Returns:
+            Jsonata: The thread-local instance.
+        """
         if hasattr(Jsonata.CURRENT, "jsonata"):
             return Jsonata.CURRENT.jsonata
 
@@ -1281,6 +1526,16 @@ class Jsonata:
         environment: Optional[Frame],
         applyto_context: Optional[Any],
     ) -> Optional[Any]:
+        """
+        Evaluate a function expression against input_item data.
+        Args:
+            expr: JSONata expression.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+            applyto_context: Context to apply to function.
+        Returns:
+            Evaluated input_item data.
+        """
         # this.current is set by getPerThreadInstance() at this point
 
         # create the procedure
@@ -1370,6 +1625,16 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Apply a procedure or function to arguments and input data, handling tail-call optimization.
+        Args:
+            proc: Procedure or function to apply.
+            args: Arguments to pass to the procedure.
+            input_item: Input data.
+            environment: Environment frame.
+        Returns:
+            Result of procedure or function application.
+        """
         result = self.apply_inner(proc, args, input_item, environment)
         while Functions.is_lambda(result) and result.thunk:
             # trampoline loop - this gets invoked as a result of tail-call optimization
@@ -1408,30 +1673,23 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Apply a procedure or function to arguments and input data (internal implementation).
+        Args:
+            proc: Procedure or function to apply.
+            args: Arguments to pass to the procedure.
+            input_item: Input data.
+            environment: Environment frame.
+        Returns:
+            Result of procedure or function application.
+        """
         try:
             validated_args = args
             if proc is not None:
                 validated_args = self.validate_arguments(proc, args, input_item)
 
             if Functions.is_lambda(proc):
-                result = self.apply_procedure(
-                    proc, validated_args
-                )  # FIXME: need in Java??? else if (proc && proc._jsonata_Object == true) {
-            #                 var focus = {
-            #                     environment: environment,
-            #                     input_item: input_item
-            #                 }
-            #                 // the `focus` is passed in as the `this` for the invoked function
-            #                 result = proc.implementation.apply(focus, validated_args)
-            #                 // `proc.implementation` might be a generator function
-            #                 // and `result` might be a generator - if so, yield
-            #                 if (isIterable(result)) {
-            #                     result = result.next().value
-            #                 }
-            #                 if (isPromise(result)) {
-            #                     result = /await/ result
-            #                 }
-            #             }
+                result = self.apply_procedure(proc, validated_args)
             elif isinstance(proc, JFunction):
                 # typically these are functions that are returned by the invocation of plugin functions
                 # the `input_item` is being passed in as the `this` for the invoked function
@@ -1485,6 +1743,15 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Evaluate a lambda expression and return a closure object.
+        Args:
+            expr: JSONata lambda expression.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+        Returns:
+            Closure object representing the lambda.
+        """
         # make a Object (closure)
         procedure = Symbol(self.parser)
 
@@ -1517,6 +1784,15 @@ class Jsonata:
         input_item: Optional[Any],
         environment: Optional[Frame],
     ) -> Optional[Any]:
+        """
+        Evaluate a partial application, returning a partially applied function or lambda.
+        Args:
+            expr: JSONata partial application expression.
+            input_item: Input data to evaluate against.
+            environment: Environment frame.
+        Returns:
+            Partially applied function or lambda.
+        """
         # partially apply a function
         result = None
         # evaluate the arguments
@@ -1563,6 +1839,15 @@ class Jsonata:
     def validate_arguments(
         self, signature: Any, args: Optional[Any], context: Optional[Any]
     ) -> Optional[Any]:
+        """
+        Validate the arguments against the signature validator (if it exists).
+        Args:
+            signature: Validator function or lambda.
+            args: Arguments to validate.
+            context: Context value.
+        Returns:
+            Validated arguments.
+        """
         validated_args = args
         if Utils.is_function(signature):
             validated_args = signature.validate(args, context)
@@ -1582,6 +1867,14 @@ class Jsonata:
     def apply_procedure(
         self, proc: Optional[Any], args: Optional[Any]
     ) -> Optional[Any]:
+        """
+        Apply a procedure to arguments and return the result.
+        Args:
+            proc: Procedure to apply.
+            args: Arguments to pass to the procedure.
+        Returns:
+            Result of procedure execution.
+        """
         result = None
         env = self.create_frame(proc.environment)
         for i, arg in enumerate(proc.arguments):
@@ -1604,6 +1897,14 @@ class Jsonata:
     # @returns {{lambda: boolean, input: *, environment: {bind, lookup}, arguments: Array, body: *}} Result of partially applied procedure
     #
     def partial_apply_procedure(self, proc: Optional[Symbol], args: Sequence) -> Symbol:
+        """
+        Partially apply a procedure, binding supplied parameters and returning a closure for remaining parameters.
+        Args:
+            proc: Procedure to partially apply.
+            args: Arguments to bind.
+        Returns:
+            Closure object representing the partially applied procedure.
+        """
         # create a closure, bind the supplied parameters and return a Object that takes the remaining (?) parameters
         # Note Uli: if no env, bind to default env so the native functions can be found
         env = self.create_frame(
@@ -1640,6 +1941,14 @@ class Jsonata:
     def partial_apply_native_function(
         self, native: Optional[JFunction], args: Sequence
     ) -> Symbol:
+        """
+        Partially apply a native function, binding supplied arguments and returning a closure for remaining parameters.
+        Args:
+            native: Native function to partially apply.
+            args: Arguments to bind.
+        Returns:
+            Closure object representing the partially applied native function.
+        """
         # create a lambda Object that wraps and invokes the native function
         # get the list of declared arguments from the native function
         # this has to be picked out from the toString() value
@@ -1686,30 +1995,43 @@ class Jsonata:
     def apply_native_function(
         self, proc: Optional[JFunction], env: Optional[Frame]
     ) -> Optional[Any]:
+        """
+        Apply a native function within the given environment.
+        Args:
+            proc: Native function to apply.
+            env: Environment in which to apply the function.
+        Returns:
+            Result of applying the native function, or None if not implemented.
+        """
         # Not called in Java - JFunction call directly calls native function
         return None
 
-    #
-    # Get native Object arguments
-    # @param {Function} func - Function
-    # @returns {*|Array} Native Object arguments
-    #
     def get_native_function_arguments(
         self, func: Optional[JFunction]
     ) -> Optional[list]:
+        """
+        Retrieve the arguments for a native function.
+        Args:
+            func: Native function whose arguments are to be retrieved.
+        Returns:
+            List of arguments for the native function, or None if not implemented.
+        """
         # Not called in Java
         return None
 
-    #
-    # Creates a Object definition
-    # @param {Function} func - Object implementation in Javascript
-    # @param {string} signature - JSONata Object signature definition
-    # @returns {{implementation: *, signature: *}} Object definition
-    #
     @staticmethod
     def define_function(
         func: str, signature: Optional[str], func_impl_method: Optional[str] = None
     ) -> JFunction:
+        """
+        Define a new function and bind it to the static frame.
+        Args:
+            func: Function name as a string.
+            signature: JSONata function signature definition.
+            func_impl_method: Optional implementation method name.
+        Returns:
+            JFunction object representing the defined function.
+        """
         fn = JNativeFunction(func, signature, Functions, func_impl_method)
         Jsonata.static_frame.bind(func, fn)
         return fn
@@ -1718,6 +2040,16 @@ class Jsonata:
     def function(
         name: str, signature: Optional[str], clazz: Optional[Any], method_name: str
     ) -> JFunction:
+        """
+        Create and return a JNativeFunction instance for the given function definition.
+        Args:
+            name: Name of the function.
+            signature: JSONata function signature definition.
+            clazz: Class or module containing the function implementation.
+            method_name: Name of the implementation method.
+        Returns:
+            JFunction object representing the defined native function.
+        """
         return JNativeFunction(name, signature, clazz, method_name)
 
     #
@@ -1745,6 +2077,10 @@ class Jsonata:
     # @returns {{bind: bind, lookup: lookup}} Created frame
     #
     def create_frame(self, enclosing_environment: Optional[Frame] = None) -> Frame:
+        """Create frame
+        @param {Object} enclosingEnvironment - Enclosing environment
+        @returns {{bind: bind, lookup: lookup}} Created frame
+        """
         return Frame(enclosing_environment)
 
         # The following logic is in class Frame:
@@ -1773,6 +2109,11 @@ class Jsonata:
     # Function registration
     @staticmethod
     def register_functions() -> None:
+        """
+        Register all built-in JSONata functions in the static frame.
+        This method defines and binds standard functions such as sum, count, string manipulation,
+        math operations, date/time utilities, and other core JSONata features.
+        """
         Jsonata.define_function("sum", "<a<n>:n>")
         Jsonata.define_function("count", "<a:n>")
         Jsonata.define_function("max", "<a<n>:n>")
@@ -1850,207 +2191,3 @@ class Jsonata:
         #  environment.bind("millis", defineFunction(function() {
         #      return timestamp.getTime()
         #  }, "<:n>"))
-
-    #
-    # lookup a message template from the catalog and substitute the inserts.
-    # Populates `err.message` with the substituted message. Leaves `err.message`
-    # untouched if code lookup fails.
-    # @param {string} err - error code to lookup
-    # @returns {undefined} - `err` is modified in place
-    #
-    def populate_message(self, err: Exception) -> Exception:
-        #  var template = errorCodes[err.code]
-        #  if(typeof template !== "undefined") {
-        #      // if there are any handlebars, replace them with the field references
-        #      // triple braces - replace with value
-        #      // double braces - replace with json stringified value
-        #      var message = template.replace(/\{\{\{([^}]+)}}}/g, function() {
-        #          return err[arguments[1]]
-        #      })
-        #      message = message.replace(/\{\{([^}]+)}}/g, function() {
-        #          return JSON.stringify(err[arguments[1]])
-        #      })
-        #      err.message = message
-        #  }
-        # Otherwise retain the original `err.message`
-        return err
-
-    @staticmethod
-    def _static_initializer() -> None:
-        Jsonata.static_frame = Frame(None)
-        Jsonata.register_functions()
-
-        # set system recursion limit to 10K (similar to JavaScript)
-        sys.setrecursionlimit(10000)
-
-    #
-    # JSONata
-    # @param {Object} expr - JSONata expression
-    # @returns Evaluated expression
-    # @throws jexception.JException An exception if an error occured.
-    #
-    @staticmethod
-    def jsonata(expression: Optional[str]) -> "Jsonata":
-        return Jsonata(expression)
-
-    #
-    # Internal constructor
-    # @param expr
-    #
-
-    parser: Parser
-    errors: Optional[Sequence[Exception]]
-    environment: Frame
-    ast: Optional[Symbol]
-    timestamp: int
-    input_item: Optional[Any]
-
-    def __init__(self, expr: Optional[str]) -> None:
-        try:
-            self.parser = Jsonata.get_parser()
-            self.ast = self.parser.parse(expr)  # , optionsRecover);
-            self.errors = self.ast.errors
-            self.ast.errors = None  # delete ast.errors;
-        except JException as err:
-            # insert error message into structure
-            # populateMessage(err); // possible side-effects on `err`
-            raise err
-        self.environment = self.create_frame(Jsonata.static_frame)
-
-        self.timestamp = (
-            Timebox.current_milli_time()
-        )  # will be overridden on each call to evalute()
-
-        self.input_item = None
-        self.validate_input_item = True
-
-        # Note: now and millis are implemented in Functions
-        #  environment.bind("now", defineFunction(function(picture, timezone) {
-        #      return datetime.fromMillis(timestamp.getTime(), picture, timezone)
-        #  }, "<s?s?:s>"))
-        #  environment.bind("millis", defineFunction(function() {
-        #      return timestamp.getTime()
-        #  }, "<:n>"))
-
-        # FIXED: options.RegexEngine not implemented in Java
-        #  if(options && options.RegexEngine) {
-        #      jsonata.RegexEngine = options.RegexEngine
-        #  } else {
-        #      jsonata.RegexEngine = RegExp
-        #  }
-
-        # Set instance for this thread
-        Jsonata.CURRENT.jsonata = self
-
-    #
-    # Flag: validate input_item objects to comply with JSON types
-    #
-
-    #
-    # Checks whether input_item validation is active
-    #
-    def is_validate_input_item(self) -> bool:
-        return self.validate_input_item
-
-    #
-    # Enable or disable input_item validation
-    # @param validateinput_item
-    #
-    def set_validate_input_item(self, validate_input_item: bool) -> None:
-        self.validate_input_item = validate_input_item
-
-    def evaluate(
-        self, input_item: Optional[Any], bindings: Optional[Frame] = None
-    ) -> Optional[Any]:
-        # throw if the expression compiled with syntax errors
-        if self.errors is not None:
-            raise JException("S0500", 0)
-
-        exec_env = None
-        if bindings is not None:
-            # var exec_env
-            # the variable bindings have been passed in - create a frame to hold these
-            exec_env = self.create_frame(self.environment)
-            for k, v in bindings.bindings.items():
-                exec_env.bind(k, v)
-        else:
-            exec_env = self.environment
-        # put the input_item document into the environment as the root object
-        exec_env.bind("$", input_item)
-
-        # capture the timestamp and put it in the execution environment
-        # the $now() and $millis() functions will return this value - whenever it is called
-        self.timestamp = Timebox.current_milli_time()
-        # exec_env.timestamp = timestamp
-
-        # if the input_item is a JSON array, then wrap it in a singleton sequence so it gets treated as a single input_item
-        if (isinstance(input_item, list)) and not Utils.is_sequence(input_item):
-            input_item = Utils.create_sequence(input_item)
-            input_item.outer_wrapper = True
-
-        if self.validate_input_item:
-            Functions.validate_input_item(input_item)
-
-        it = None
-        try:
-            it = self.eval(self.ast, input_item, exec_env)
-            #  if (typeof callback === "function") {
-            #      callback(null, it)
-            #  }
-            it = Utils.convert_nulls(it)
-            return it
-        except Exception as err:
-            # insert error message into structure
-            self.populate_message(err)  # possible side-effects on `err`
-            raise err
-
-    def assign(self, name: str, value: Optional[Any]) -> None:
-        """
-        Assign a value to a variable in the environment.
-        Args:
-            name: Variable name.
-            value: Value to assign.
-        """
-        self.environment.bind(name, value)
-
-    def register_lambda(self, name: str, implementation: Callable) -> None:
-        """
-        Register a lambda function in the environment.
-        Args:
-            name: Name of the lambda.
-            implementation: Callable implementing the lambda.
-        """
-        from src.jsonata.Jsonata.JLambda import JLambda
-
-        self.environment.bind(name, JLambda(implementation))
-
-    def register_function(self, name: str, function: Any) -> None:
-        """
-        Register a function in the environment.
-        Args:
-            name: Name of the function.
-            function: Function object to register.
-        """
-        self.environment.bind(name, function)
-
-    def get_errors(self) -> Optional[list[Exception]]:
-        """
-        Get the list of errors from parsing or evaluation.
-        Returns:
-            List of Exception objects or None.
-        """
-        return self.errors
-
-    PARSER = threading.local()
-
-    @staticmethod
-    def get_parser() -> Parser:
-        with Jsonata.MUTEX:
-            if hasattr(Jsonata.PARSER, "parser"):
-                return Jsonata.PARSER.parser
-            p = Parser()
-            Jsonata.PARSER.parser = p
-            return p
-
-
-Jsonata._static_initializer()

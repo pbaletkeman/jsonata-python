@@ -95,7 +95,7 @@ class ComparatorWrapper:
             if aa == bb:
                 index += 1
                 continue
-            elif aa < bb:
+            if aa < bb:
                 comp = -1
             else:
                 comp = 1

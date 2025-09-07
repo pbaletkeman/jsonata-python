@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from typing import Any, MutableMapping, Optional
-from src.jsonata.Timebox import Timebox
+from src.jsonata.Timebox.Timebox import Timebox
 from src.jsonata.Utils.Utils import Utils
 
 

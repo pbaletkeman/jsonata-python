@@ -33,8 +33,8 @@ class JLambda(JFunctionCallable, JFunctionSignatureValidation):
         """
         if isinstance(args, list):
             return self.function(*args)
-        else:
-            return self.function()
+
+        return self.function()
 
     def validate(self, args: Optional[Any], context: Optional[Any]) -> Optional[Any]:
         """

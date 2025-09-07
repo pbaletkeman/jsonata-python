@@ -1111,10 +1111,9 @@ class DateTimeUtils:
         now = datetime.date(dt.year, dt.month, dt.day)
         if now < start_of_iso_month:
             return this_month.previous_month().month
-        elif now >= end_of_iso_month:
+        if now >= end_of_iso_month:
             return next_month.month
-        else:
-            return this_month.month
+        return this_month.month
 
     @staticmethod
     def start_of_first_week(year_month: "YearMonth") -> datetime.date:

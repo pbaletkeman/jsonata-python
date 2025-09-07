@@ -59,8 +59,8 @@ class JFunction(JFunctionCallable, JFunctionSignatureValidation):
 
         if self.signature is not None:
             return self.signature.validate(args, context)
-        else:
-            return args
+
+        return args
 
     def get_number_of_args(self) -> int:
         """
