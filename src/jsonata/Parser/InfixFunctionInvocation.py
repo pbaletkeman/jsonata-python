@@ -1,7 +1,7 @@
 from src.jsonata.Parser.Infix import Infix
 from src.jsonata.Parser.Parser import Parser
 from src.jsonata.JException.JException import JException
-from src.jsonata.Signature import Signature
+from src.jsonata.Signature.Signature import Signature
 
 
 class InfixFunctionInvocation(Infix):

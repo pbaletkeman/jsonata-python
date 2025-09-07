@@ -25,6 +25,29 @@
 #
 
 import copy
+from src.jsonata.Parser.Prefix import Prefix
+from src.jsonata.Parser.InfixAndPrefix import InfixAndPrefix
+from src.jsonata.Parser.InfixAnd import InfixAnd
+from src.jsonata.Parser.InfixOr import InfixOr
+from src.jsonata.Parser.InfixIn import InfixIn
+from src.jsonata.Parser.InfixParentOperator import InfixParentOperator
+from src.jsonata.Parser.InfixFieldWildcard import InfixFieldWildcard
+from src.jsonata.Parser.InfixRError import InfixRError
+from src.jsonata.Parser.PrefixDescendantWildcard import PrefixDescendantWildcard
+from src.jsonata.Parser.InfixFunctionInvocation import InfixFunctionInvocation
+from src.jsonata.Parser.InfixArrayConstructor import InfixArrayConstructor
+from src.jsonata.Parser.InfixOrderBy import InfixOrderBy
+from src.jsonata.Parser.InfixObjectConstructor import InfixObjectConstructor
+from src.jsonata.Parser.InfixRBindVariable import InfixRBindVariable
+from src.jsonata.Parser.InfixFocusVariableBind import InfixFocusVariableBind
+from src.jsonata.Parser.InfixIndexVariableBind import InfixIndexVariableBind
+from src.jsonata.Parser.InfixTernaryOperator import InfixTernaryOperator
+from src.jsonata.Parser.InfixCoalesce import InfixCoalesce
+from src.jsonata.Parser.InfixDefault import InfixDefault
+from src.jsonata.Parser.PrefixObjectTransformer import PrefixObjectTransformer
+
+from src.jsonata.Parser.Infix import Infix
+from src.jsonata.Parser.Terminal import Terminal
 from src.jsonata.Tokenizer.Token import Token
 from typing import Any, MutableSequence, Optional, Sequence
 
@@ -57,7 +80,7 @@ class Parser:
         """
         remaining = []
         if self.node.id != "(end)":
-            t = Tokenizer.Token(self.node.type, self.node.value, self.node.position)
+            t = Token(self.node.type, self.node.value, self.node.position)
             remaining.append(t)
         nxt = self.lexer.next(False)
         while nxt is not None:
@@ -224,48 +247,48 @@ class Parser:
         self.ancestor_index = 0
         self.ancestry = []
 
-        self.register(Parser.Terminal(self, "(end)"))
-        self.register(Parser.Terminal(self, "(name)"))
-        self.register(Parser.Terminal(self, "(literal)"))
-        self.register(Parser.Terminal(self, "(regex)"))
-        self.register(Parser.Symbol(self, ":"))
-        self.register(Parser.Symbol(self, ";"))
-        self.register(Parser.Symbol(self, ","))
-        self.register(Parser.Symbol(self, ")"))
-        self.register(Parser.Symbol(self, "]"))
-        self.register(Parser.Symbol(self, "}"))
-        self.register(Parser.Symbol(self, ".."))  # range operator
-        self.register(Parser.Infix(self, "."))  # map operator
-        self.register(Parser.Infix(self, "+"))  # numeric addition
-        self.register(Parser.InfixAndPrefix(self, "-"))  # numeric subtraction
+        self.register(Terminal(self, "(end)"))
+        self.register(Terminal(self, "(name)"))
+        self.register(Terminal(self, "(literal)"))
+        self.register(Terminal(self, "(regex)"))
+        self.register(Symbol(self, ":"))
+        self.register(Symbol(self, ";"))
+        self.register(Symbol(self, ","))
+        self.register(Symbol(self, ")"))
+        self.register(Symbol(self, "]"))
+        self.register(Symbol(self, "}"))
+        self.register(Symbol(self, ".."))  # range operator
+        self.register(Infix(self, "."))  # map operator
+        self.register(Infix(self, "+"))  # numeric addition
+        self.register(InfixAndPrefix(self, "-"))  # numeric subtraction
         # unary numeric negation
 
-        self.register(Parser.InfixFieldWildcard(self))
+        self.register(InfixFieldWildcard(self))
         # numeric multiplication
-        self.register(Parser.Infix(self, "/"))  # numeric division
-        self.register(Parser.InfixParentOperator(self))
+        self.register(Infix(self, "/"))  # numeric division
+        self.register(InfixParentOperator(self))
         # numeric modulus
-        self.register(Parser.Infix(self, "="))  # equality
-        self.register(Parser.Infix(self, "<"))  # less than
-        self.register(Parser.Infix(self, ">"))  # greater than
-        self.register(Parser.Infix(self, "!="))  # not equal to
-        self.register(Parser.Infix(self, "<="))  # less than or equal
-        self.register(Parser.Infix(self, ">="))  # greater than or equal
-        self.register(Parser.Infix(self, "&"))  # string concatenation
+        self.register(Infix(self, "="))  # equality
+        self.register(Infix(self, "<"))  # less than
+        self.register(Infix(self, ">"))  # greater than
+        self.register(Infix(self, "!="))  # not equal to
+        self.register(Infix(self, "<="))  # less than or equal
+        self.register(Infix(self, ">="))  # greater than or equal
+        self.register(Infix(self, "&"))  # string concatenation
 
-        self.register(Parser.InfixAnd(self))
+        self.register(InfixAnd(self))
         # Boolean AND
-        self.register(Parser.InfixOr(self))
+        self.register(InfixOr(self))
         # Boolean OR
-        self.register(Parser.InfixIn(self))
+        self.register(InfixIn(self))
         # is member of array
         # merged Infix: register(new Terminal("and")); // the 'keywords' can also be used as terminals (field names)
         # merged Infix: register(new Terminal("or")); //
         # merged Infix: register(new Terminal("in")); //
         # merged Infix: register(new Prefix("-")); // unary numeric negation
-        self.register(Parser.Infix(self, "~>"))  # function application
+        self.register(Infix(self, "~>"))  # function application
 
-        self.register(Parser.InfixRError(self))
+        self.register(InfixRError(self))
 
         # field wildcard (single level)
         # merged with Infix *
@@ -278,7 +301,7 @@ class Parser:
 
         # descendant wildcard (multi-level)
 
-        self.register(Parser.PrefixDescendantWildcard(self))
+        self.register(PrefixDescendantWildcard(self))
 
         # parent operator
         # merged with Infix %
@@ -290,38 +313,38 @@ class Parser:
         # })
 
         # function invocation
-        self.register(Parser.InfixFunctionInvocation(self, Tokenizer.operators["("]))
+        self.register(InfixFunctionInvocation(self, Tokenizer.operators["("]))
 
         # array constructor
 
         # merged: register(new Prefix("[") {
-        self.register(Parser.InfixArrayConstructor(self, Tokenizer.operators["["]))
+        self.register(InfixArrayConstructor(self, Tokenizer.operators["["]))
 
         # order-by
-        self.register(Parser.InfixOrderBy(self, Tokenizer.operators["^"]))
+        self.register(InfixOrderBy(self, Tokenizer.operators["^"]))
 
-        self.register(Parser.InfixObjectConstructor(self, Tokenizer.operators["{"]))
+        self.register(InfixObjectConstructor(self, Tokenizer.operators["{"]))
 
         # bind variable
-        self.register(Parser.InfixRBindVariable(self, Tokenizer.operators[":="]))
+        self.register(InfixRBindVariable(self, Tokenizer.operators[":="]))
 
         # focus variable bind
-        self.register(Parser.InfixFocusVariableBind(self, Tokenizer.operators["@"]))
+        self.register(InfixFocusVariableBind(self, Tokenizer.operators["@"]))
 
         # index (position) variable bind
-        self.register(Parser.InfixIndexVariableBind(self, Tokenizer.operators["#"]))
+        self.register(InfixIndexVariableBind(self, Tokenizer.operators["#"]))
 
         # if/then/else ternary operator ?:
-        self.register(Parser.InfixTernaryOperator(self, Tokenizer.operators["?"]))
+        self.register(InfixTernaryOperator(self, Tokenizer.operators["?"]))
 
         # coalescing operator ??
-        self.register(Parser.InfixCoalesce(self, Tokenizer.operators["??"]))
+        self.register(InfixCoalesce(self, Tokenizer.operators["??"]))
 
         # elvis/default operator ?:
-        self.register(Parser.InfixDefault(self, Tokenizer.operators["?:"]))
+        self.register(InfixDefault(self, Tokenizer.operators["?:"]))
 
         # object transformer
-        self.register(Parser.PrefixObjectTransformer(self))
+        self.register(PrefixObjectTransformer(self))
 
     # tail call optimization
     # this is invoked by the post parser to analyse lambda functions to see
@@ -329,9 +352,17 @@ class Parser:
     # be invoked by the trampoline loop during function application.
     # This enables tail-recursive functions to be written without growing the stack
     def tail_call_optimize(self, expr: Symbol) -> Symbol:
+        """
+        Optimize tail-recursive lambda functions in the AST to prevent stack overflow.
+        Replaces tail calls with thunks for trampoline execution.
+        Args:
+            expr: The Symbol node representing the expression.
+        Returns:
+            Symbol: The optimized Symbol node.
+        """
         result = None
         if expr.type == "function" and expr.predicate is None:
-            thunk = Parser.Symbol(self)
+            thunk = Symbol(self)
             thunk.type = "lambda"
             thunk.thunk = True
             thunk.arguments = []
@@ -359,6 +390,15 @@ class Parser:
         return result
 
     def seek_parent(self, node: Symbol, slot: Symbol) -> Symbol:
+        """
+        Seek and assign the parent slot for a given node in the AST.
+        Used for resolving ancestry in path and block expressions.
+        Args:
+            node: The Symbol node to resolve parent for.
+            slot: The Symbol slot representing the parent.
+        Returns:
+            Symbol: The updated slot after seeking parent.
+        """
         if node.type == "name" or node.type == "wildcard":
             slot.level -= 1
             if slot.level == 0:
@@ -392,6 +432,13 @@ class Parser:
         return slot
 
     def push_ancestry(self, result: Symbol, value: Optional[Symbol]) -> None:
+        """
+        Push ancestry slots from a value node to a result node in the AST.
+        Used for tracking parent relationships in complex expressions.
+        Args:
+            result: The Symbol node to update ancestry for.
+            value: The Symbol node providing ancestry slots.
+        """
         if value is None:
             return  # Added NPE check
         if value.seeking_parent is not None or value.type == "parent":
@@ -404,6 +451,12 @@ class Parser:
                 result.seeking_parent.extend(slots)
 
     def resolve_ancestry(self, path: Symbol) -> None:
+        """
+        Resolve ancestry slots for a path expression in the AST.
+        Ensures correct parent relationships for all steps in the path.
+        Args:
+            path: The Symbol node representing the path expression.
+        """
         index = len(path.steps) - 1
         laststep = path.steps[index]
         slots = laststep.seeking_parent if (laststep.seeking_parent is not None) else []
@@ -571,7 +624,7 @@ class Parser:
                 # RHS defines the terms
                 result = self.process_ast(expr.lhs)
                 if result.type != "path":
-                    _res = Parser.Symbol(self)
+                    _res = Symbol(self)
                     _res.type = "path"
                     _res.steps = [result]
                     result = _res
@@ -580,9 +633,10 @@ class Parser:
                 sort_step.position = expr.position
 
                 def lambda1(terms):
+                    # Processes a sort term for order-by expressions
                     expression = self.process_ast(terms.expression)
                     self.push_ancestry(sort_step, expression)
-                    res = Parser.Symbol(self)
+                    res = Symbol(self)
                     res.descending = terms.descending
                     res.expression = expression
                     return res
@@ -591,7 +645,7 @@ class Parser:
                 result.steps.append(sort_step)
                 self.resolve_ancestry(result)
             elif value == ":=":
-                result = Parser.Symbol(self)
+                result = Symbol(self)
                 result.type = "bind"
                 result.value = expr.value
                 result.position = expr.position
@@ -637,7 +691,7 @@ class Parser:
                     step.stages.append(_res)
                 step.tuple = True
             elif value == "~>":
-                result = Parser.Symbol(self)
+                result = Symbol(self)
                 result.type = "apply"
                 result.value = expr.value
                 result.position = expr.position
@@ -645,7 +699,7 @@ class Parser:
                 result.rhs = self.process_ast(expr.rhs)
                 result.keep_array = result.lhs.keep_array or result.rhs.keep_array
             else:
-                result = Parser.Infix(self, None)
+                result = Infix(self, None)
                 result.type = expr.type
                 result.value = expr.value
                 result.position = expr.position
@@ -655,7 +709,7 @@ class Parser:
                 self.push_ancestry(result, result.rhs)
 
         elif type == "unary":
-            result = Parser.Symbol(self)
+            result = Symbol(self)
             result.type = expr.type
             result.value = expr.value
             result.position = expr.position
@@ -667,6 +721,7 @@ class Parser:
 
                 # array constructor - process each item
                 def lambda2(item):
+                    # Processes an item for array constructor expressions
                     value = self.process_ast(item)
                     self.push_ancestry(result, value)
                     return value
@@ -676,6 +731,7 @@ class Parser:
                 # object constructor - process each pair
                 # throw new Error("processAST {} unimpl")
                 def lambda3(pair):
+                    # Processes a key-value pair for object constructor expressions
                     key = self.process_ast(pair[0])
                     self.push_ancestry(result, key)
                     value = self.process_ast(pair[1])
@@ -696,13 +752,14 @@ class Parser:
                     self.push_ancestry(result, result.expression)
 
         elif type == "function" or type == "partial":
-            result = Parser.Symbol(self)
+            result = Symbol(self)
             result.type = expr.type
             result.name = expr.name
             result.value = expr.value
             result.position = expr.position
 
             def lambda4(arg):
+                # Processes an argument for function and partial expressions
                 arg_ast = self.process_ast(arg)
                 self.push_ancestry(result, arg_ast)
                 return arg_ast
@@ -710,7 +767,7 @@ class Parser:
             result.arguments = [lambda4(x) for x in expr.arguments]
             result.procedure = self.process_ast(expr.procedure)
         elif type == "lambda":
-            result = Parser.Symbol(self)
+            result = Symbol(self)
             result.type = expr.type
             result.arguments = expr.arguments
             result.signature = expr.signature
@@ -718,7 +775,7 @@ class Parser:
             body = self.process_ast(expr.body)
             result.body = self.tail_call_optimize(body)
         elif type == "condition":
-            result = Parser.Symbol(self)
+            result = Symbol(self)
             result.type = expr.type
             result.position = expr.position
             result.condition = self.process_ast(expr.condition)
@@ -729,7 +786,7 @@ class Parser:
                 result._else = self.process_ast(expr._else)
                 self.push_ancestry(result, result._else)
         elif type == "transform":
-            result = Parser.Symbol(self)
+            result = Symbol(self)
             result.type = expr.type
             result.position = expr.position
             result.pattern = self.process_ast(expr.pattern)
@@ -737,12 +794,13 @@ class Parser:
             if expr.delete is not None:
                 result.delete = self.process_ast(expr.delete)
         elif type == "block":
-            result = Parser.Symbol(self)
+            result = Symbol(self)
             result.type = expr.type
             result.position = expr.position
 
             # array of expressions - process each one
             def lambda5(item):
+                # Processes an item for block expressions, tracking consarray flag
                 part = self.process_ast(item)
                 self.push_ancestry(result, part)
                 if part.consarray or (part.type == "path" and part.steps[0].consarray):
@@ -753,15 +811,15 @@ class Parser:
             # TODO scan the array of expressions to see if any of them assign variables
             # if so, need to mark the block as one that needs to create a new frame
         elif type == "name":
-            result = Parser.Symbol(self)
+            result = Symbol(self)
             result.type = "path"
             result.steps = [expr]
             if expr.keep_array:
                 result.keep_singleton_array = True
         elif type == "parent":
-            result = Parser.Symbol(self)
+            result = Symbol(self)
             result.type = "parent"
-            result.slot = Parser.Symbol(self)
+            result.slot = Symbol(self)
             result.slot.label = "!" + str(self.ancestor_label)
             self.ancestor_label += 1
             result.slot.level = 1
@@ -814,7 +872,7 @@ class Parser:
 
     def object_parser(self, left: Optional[Symbol]) -> Symbol:
 
-        res = Parser.Infix(self, "{") if left is not None else Parser.Prefix(self, "{")
+        res = Infix(self, "{") if left is not None else Prefix(self, "{")
 
         a = []
         if self.node.id != "}":

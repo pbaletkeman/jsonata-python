@@ -33,30 +33,13 @@ from src.jsonata.DateTimeUtils.MatcherPart import MatcherPart
 
 
 class MatcherPartRoman(MatcherPart):
-    """
-    Matcher part for Roman numeral sequences, supporting upper/lower case.
-    """
-
     _is_upper: bool
 
     def __init__(self, regex, is_upper):
-        """
-        Initialize a MatcherPartRoman with regex and case type.
-        Args:
-            regex (str): Regex pattern for matching Roman numerals.
-            is_upper (bool): True if matching uppercase, False for lowercase.
-        """
         super().__init__(regex)
         self._is_upper = is_upper
 
     def parse(self, value: str) -> int:
-        """
-        Parse a Roman numeral sequence into its decimal value.
-        Args:
-            value (str): The Roman numeral sequence to parse.
-        Returns:
-            int: Parsed decimal value.
-        """
         from src.jsonata.DateTimeUtils.DateTimeUtils import DateTimeUtils
 
         return DateTimeUtils.roman_to_decimal(

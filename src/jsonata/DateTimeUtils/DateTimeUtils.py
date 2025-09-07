@@ -44,6 +44,7 @@ from src.jsonata.DateTimeUtils.MatcherPartLookup import MatcherPartLookup
 from src.jsonata.DateTimeUtils.MatcherPartLetters import MatcherPartLetters
 from src.jsonata.DateTimeUtils.MatcherPartRoman import MatcherPartRoman
 from src.jsonata.DateTimeUtils.MatcherPartDecimal import MatcherPartDecimal
+from src.jsonata.DateTimeUtils.MatcherPartWords import MatcherPartWords
 from src.jsonata.DateTimeUtils.Formats import Formats
 from src.jsonata.DateTimeUtils.PictureMatcher import PictureMatcher
 from src.jsonata.Constants.Constants import Constants
@@ -1379,7 +1380,6 @@ class DateTimeUtils:
             words.add("and")
             words.add("[\\-, ]")
             regex = "(?:" + "|".join(words) + ")+"
-            from src.jsonata.DateTimeUtils.MatcherPartWords import MatcherPartWords
 
             matcher = MatcherPartWords(regex)
         elif format_spec.primary == Formats.DECIMAL:

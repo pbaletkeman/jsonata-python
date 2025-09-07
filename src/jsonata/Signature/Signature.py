@@ -263,12 +263,18 @@ class Signature:
 
     def throw_validation_error(
         self,
-        # bad_args: Optional[Sequence],
         bad_sig: Optional[str],
         function_name: Optional[str],
     ) -> NoReturn:
-        # to figure out where this went wrong we need apply each component of the
-        # regex to each argument until we get to the one that fails to match
+        """
+        Raise a validation error for a function signature mismatch.
+        Determines which argument failed to match the expected pattern.
+        Args:
+            bad_sig: The signature string that failed validation.
+            function_name: The name of the function being validated.
+        Raises:
+            JException: With details about the failed argument.
+        """
         partial_pattern = "^"
 
         good_to = 0
@@ -285,6 +291,17 @@ class Signature:
         raise JException("T0410", -1, (good_to + 1), function_name)
 
     def validate(self, args: Any, context: Optional[Any]) -> Optional[Any]:
+        """
+        Validate arguments against the function signature.
+        Checks types and context, returns validated arguments or raises error.
+        Args:
+            args: The arguments to validate.
+            context: The context value for missing arguments.
+        Returns:
+            Optional[Any]: The validated arguments if successful.
+        Raises:
+            JException: If validation fails.
+        """
         supplied_sig = ""
         for arg in args:
             supplied_sig += self.get_symbol(arg)
@@ -356,6 +373,11 @@ class Signature:
         self.throw_validation_error(supplied_sig, self.function_name)
 
     def get_number_of_args(self) -> int:
+        """
+        Get the total number of parameters in the signature.
+        Returns:
+            int: The number of parameters.
+        """
         return len(self._params)
 
     #
@@ -363,6 +385,11 @@ class Signature:
     # I.e. the # of all non-optional arguments.
     #
     def get_min_number_of_args(self) -> int:
+        """
+        Get the minimum number of required (non-optional) arguments.
+        Returns:
+            int: The count of non-optional parameters.
+        """
         res = 0
         for p in self._params:
             if "?" not in p.regex:
