@@ -34,10 +34,19 @@ from dataclasses import dataclass
 
 @dataclass
 class YearMonth:
+    """
+    Represents a year and month, with utility methods for navigation.
+    """
+
     year: int
     month: int
 
     def next_month(self):
+        """
+        Get the YearMonth for the next month.
+        Returns:
+            YearMonth: The next month.
+        """
         return (
             YearMonth(self.year + 1, 1)
             if self.month == 12
@@ -45,6 +54,11 @@ class YearMonth:
         )
 
     def previous_month(self):
+        """
+        Get the YearMonth for the previous month.
+        Returns:
+            YearMonth: The previous month.
+        """
         return (
             YearMonth(self.year - 1, 12)
             if self.month == 1
@@ -52,7 +66,17 @@ class YearMonth:
         )
 
     def next_year(self):
+        """
+        Get the YearMonth for the same month in the next year.
+        Returns:
+            YearMonth: The next year.
+        """
         return YearMonth(self.year + 1, self.month)
 
     def previous_year(self):
+        """
+        Get the YearMonth for the same month in the previous year.
+        Returns:
+            YearMonth: The previous year.
+        """
         return YearMonth(self.year - 1, self.month)

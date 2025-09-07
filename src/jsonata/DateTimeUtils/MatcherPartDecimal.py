@@ -35,13 +35,30 @@ from src.jsonata.DateTimeUtils.MatcherPart import MatcherPart
 
 
 class MatcherPartDecimal(MatcherPart):
+    """
+    Matcher part for decimal numbers, supporting formatting and parsing.
+    """
+
     _format_spec: "Format"
 
     def __init__(self, regex, format_spec):
+        """
+        Initialize a MatcherPartDecimal with regex and format specification.
+        Args:
+            regex (str): Regex pattern for matching decimal numbers.
+            format_spec (Format): Format specification for parsing.
+        """
         super().__init__(regex)
         self._format_spec = format_spec
 
     def parse(self, value: str) -> int:
+        """
+        Parse a decimal value using the format specification.
+        Args:
+            value (str): The string value to parse.
+        Returns:
+            int: Parsed integer value.
+        """
         digits = value
         if self._format_spec.ordinal:
             digits = value[0 : len(value) - 2]

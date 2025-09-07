@@ -2,6 +2,11 @@ from src.jsonata.Utils.Utils import Utils
 
 
 class RangeList(list):
+    """
+    Represents a list-like range from a to b (inclusive) for use in Jsonata expressions.
+    Supports indexing and length operations.
+    """
+
     a: int
     b: int
     size: int

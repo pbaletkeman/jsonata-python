@@ -33,7 +33,15 @@ from src.jsonata.DateTimeUtils.MatcherPart import MatcherPart
 
 
 class PictureMatcher:
+    """
+    Represents a matcher for a parsed picture format, holding matcher parts.
+    Used for matching and parsing date/time strings in Jsonata.
+    """
+
     parts: list["MatcherPart"]
 
     def __init__(self):
+        """
+        Initialize a PictureMatcher with an empty list of matcher parts.
+        """
         self.parts = []

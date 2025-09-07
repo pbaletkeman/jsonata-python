@@ -33,13 +33,30 @@ from src.jsonata.DateTimeUtils.MatcherPart import MatcherPart
 
 
 class MatcherPartLetters(MatcherPart):
+    """
+    Matcher part for alphabetic letter sequences, supporting upper/lower case.
+    """
+
     _is_upper: bool
 
     def __init__(self, regex, is_upper):
+        """
+        Initialize a MatcherPartLetters with regex and case type.
+        Args:
+            regex (str): Regex pattern for matching letter sequences.
+            is_upper (bool): True if matching uppercase letters, False for lowercase.
+        """
         super().__init__(regex)
         self._is_upper = is_upper
 
     def parse(self, value: str) -> int:
+        """
+        Parse a letter sequence into its decimal value.
+        Args:
+            value (str): The letter sequence to parse.
+        Returns:
+            int: Parsed decimal value.
+        """
         from src.jsonata.DateTimeUtils.DateTimeUtils import DateTimeUtils
 
         return DateTimeUtils.letters_to_decimal(value, "A" if self._is_upper else "a")

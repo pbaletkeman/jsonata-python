@@ -5,6 +5,11 @@ from src.jsonata.Signature import Signature
 
 
 class InfixFunctionInvocation(Infix):
+    """
+    Represents the infix function invocation operator ( and ) in the Jsonata parser.
+    Handles function calls, lambda definitions, and block expressions.
+    """
+
     _outer_instance: "Parser"
 
     def __init__(self, outer_instance, get):

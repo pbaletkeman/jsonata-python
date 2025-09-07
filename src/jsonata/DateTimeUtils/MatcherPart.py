@@ -33,12 +33,30 @@ from typing import Optional
 
 
 class MatcherPart:
+    """
+    Represents a part of a regex matcher for date/time or number parsing in Jsonata.
+    """
+
     regex: str
     component: Optional[str]
 
     def __init__(self, regex):
+        """
+        Initialize a MatcherPart with a regex pattern.
+        Args:
+            regex (str): The regex pattern for matching.
+        """
         self.regex = regex
         self.component = None
 
     def parse(self, value: str) -> int:
+        """
+        Parse a value using the matcher part's regex.
+        Args:
+            value (str): The value to parse.
+        Returns:
+            int: Parsed integer value.
+        Raises:
+            NotImplementedError: If not implemented in subclass.
+        """
         raise NotImplementedError

@@ -37,6 +37,10 @@ from src.jsonata.DateTimeUtils.GroupingSeparator import GroupingSeparator
 
 
 class Format:
+    """
+    Represents formatting options for integer and date/time values in Jsonata.
+    """
+
     type: str
     primary: "Formats"
     caseType: "TCase"
@@ -49,6 +53,9 @@ class Format:
     token: Optional[str]
 
     def __init__(self):
+        """
+        Initialize a Format object with default formatting options.
+        """
         self.type = "integer"
         self.primary = Formats.DECIMAL
         self.case_type = TCase.LOWER

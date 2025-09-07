@@ -61,6 +61,11 @@ from src.jsonata.Signature.Signature import Signature as sig
 # @description JSON query and transformation language
 #
 class Jsonata:
+    """
+    Main class for the Jsonata Python implementation. Provides methods for evaluating
+    and transforming JSONata expressions against input data, supporting query, transformation,
+    and advanced features like grouping, sorting, and filtering.
+    """
 
     static_frame = None  # = createFrame(null);
 

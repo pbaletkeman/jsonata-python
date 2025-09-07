@@ -29,6 +29,10 @@ from src.jsonata.Utils.NullValue import NullValue
 
 
 class Utils:
+    """
+    Utility functions for Jsonata Python implementation.
+    Provides helpers for type checking, sequence creation, number conversion, and recursive null handling.
+    """
 
     NULL_VALUE = NullValue()
 

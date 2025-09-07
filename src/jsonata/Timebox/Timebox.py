@@ -30,6 +30,11 @@ from src.jsonata.JException.JException import JException
 # See Frame.setRuntimeBounds - usually not used directly
 #
 class Timebox:
+    """
+    Protects expression evaluation from runaway execution by enforcing timeouts and maximum recursion depth.
+    Used to prevent infinite loops and excessive stack growth in Jsonata expressions.
+    """
+
     #
     # Protect the process/browser from a runnaway expression
     # i.e. Infinite loop (tail recursion), or excessive stack growth

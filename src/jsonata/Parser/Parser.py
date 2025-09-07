@@ -37,6 +37,11 @@ from src.jsonata.Signature.Signature import Signature
 
 # var parseSignature = require('./signature')
 class Parser:
+    """
+    Implements the top-down operator precedence parser for Jsonata expressions.
+    Based on Pratt's algorithm and inspired by JavaScript and Java implementations.
+    Handles tokenization, symbol registration, parsing, error recovery, AST processing, and tail call optimization.
+    """
 
     # This parser implements the 'Top down operator precedence' algorithm developed by Vaughan R Pratt; http://dl.acm.org/citation.cfm?id=512931.
     # and builds on the Javascript framework described by Douglas Crockford at http://javascript.crockford.com/tdop/tdop.html

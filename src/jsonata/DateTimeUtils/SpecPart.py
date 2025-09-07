@@ -36,10 +36,15 @@ from src.jsonata.DateTimeUtils.Format import Format
 
 
 class SpecPart:
+    """
+    Represents a part of a picture format specification for date/time formatting.
+    Holds details about type, component, value, width, presentation, and formatting.
+    """
+
     type: str
     value: Optional[str]
     component: str
-    width: (int, int)
+    width: tuple[int, int]
     presentation1: Optional[str]
     presentation2: Optional[str]
     ordinal: bool
@@ -47,8 +52,15 @@ class SpecPart:
     integerFormat: "Optional[Format]"
     n: int
 
-    def __init__(self, type, component=None, value=None):
-        self.type = type
+    def __init__(self, part_type, component=None, value=None):
+        """
+        Initialize a SpecPart with type, component, and value.
+        Args:
+            part_type (str): The type of the spec part (e.g., 'literal', 'marker').
+            component (str, optional): The component specifier.
+            value (str, optional): The value for literals.
+        """
+        self.type = part_type
         self.component = component
         self.value = value
 

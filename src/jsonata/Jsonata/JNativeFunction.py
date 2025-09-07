@@ -5,6 +5,10 @@ from src.jsonata.Signature.Signature import Signature
 
 
 class JNativeFunction(JFunction):
+    """
+    Represents a native function in Jsonata, wrapping Python implementations and signatures.
+    """
+
     function_name: str
     signature: Optional[Signature]
     clz: Any

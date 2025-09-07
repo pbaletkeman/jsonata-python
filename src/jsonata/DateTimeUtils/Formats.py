@@ -33,6 +33,10 @@ from enum import Enum
 
 
 class Formats(Enum):
+    """
+    Enumeration of supported formatting types for numbers and sequences in Jsonata.
+    """
+
     DECIMAL = "decimal"
     LETTERS = "letters"
     ROMAN = "roman"

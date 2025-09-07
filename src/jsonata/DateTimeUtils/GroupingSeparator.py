@@ -31,9 +31,19 @@
 
 
 class GroupingSeparator:
+    """
+    Represents a grouping separator for formatted numbers (e.g., thousands separator).
+    """
+
     position: int
     character: str
 
     def __init__(self, position, character):
+        """
+        Initialize a GroupingSeparator.
+        Args:
+            position (int): Position of the separator in the number.
+            character (str): Separator character (e.g., ',').
+        """
         self.position = position
         self.character = character

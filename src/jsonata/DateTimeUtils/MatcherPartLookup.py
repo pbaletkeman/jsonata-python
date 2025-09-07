@@ -33,11 +33,28 @@ from src.jsonata.DateTimeUtils.MatcherPart import MatcherPart
 
 
 class MatcherPartLookup(MatcherPart):
+    """
+    Matcher part for lookup-based parsing, using a dictionary to map values.
+    """
+
     _lookup: dict[str, int]
 
     def __init__(self, regex, lookup):
+        """
+        Initialize a MatcherPartLookup with regex and lookup dictionary.
+        Args:
+            regex (str): Regex pattern for matching values.
+            lookup (dict[str, int]): Dictionary mapping values to integers.
+        """
         super().__init__(regex)
         self._lookup = lookup
 
     def parse(self, value: str) -> int:
+        """
+        Parse a value using the lookup dictionary.
+        Args:
+            value (str): The value to look up.
+        Returns:
+            int: Mapped integer value.
+        """
         return self._lookup[value]

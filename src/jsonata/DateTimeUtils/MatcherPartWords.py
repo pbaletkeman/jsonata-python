@@ -33,8 +33,18 @@ from src.jsonata.DateTimeUtils.MatcherPart import MatcherPart
 
 
 class MatcherPartWords(MatcherPart):
+    """
+    Matcher part for parsing numbers expressed as words (e.g., 'one hundred').
+    """
 
     def parse(self, value: str) -> int:
+        """
+        Parse a number expressed as words into its integer value.
+        Args:
+            value (str): The word string to parse.
+        Returns:
+            int: Parsed integer value.
+        """
         from src.jsonata.DateTimeUtils.DateTimeUtils import DateTimeUtils
 
         return DateTimeUtils.words_to_number(value.casefold())

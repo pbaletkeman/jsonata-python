@@ -36,6 +36,11 @@ from src.jsonata.Tokenizer.Token import Token
 
 
 class Tokenizer:
+    """
+    Lexical analyzer for Jsonata expressions. Converts input strings into tokens for parsing.
+    Handles operators, literals, names, regex, and error detection.
+    """
+
     operators = {
         ".": 75,
         "[": 80,

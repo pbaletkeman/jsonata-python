@@ -1,4 +1,7 @@
 ﻿#
+"""
+Jsonata Python implementation: Utility functions for expressions, string, math, and data manipulation.
+"""
 # Copyright Robert Yokota
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -59,12 +62,30 @@ from src.jsonata.Jsonata.JFunction import JFunction
 
 
 class Functions:
+    """
+    Collection of static utility functions for Jsonata expressions, string, math, and data manipulation.
+    """
+
     @staticmethod
     def min(args: Optional[Sequence[float]]) -> Optional[float]:
+        """
+        Return the minimum value in a sequence.
+        Args:
+            args (Optional[Sequence[float]]): Sequence of numbers.
+        Returns:
+            Optional[float]: Minimum value or None.
+        """
         return Functions.min_value(args)
 
     @staticmethod
     def max(args: Optional[Sequence[float]]) -> Optional[float]:
+        """
+        Return the maximum value in a sequence.
+        Args:
+            args (Optional[Sequence[float]]): Sequence of numbers.
+        Returns:
+            Optional[float]: Maximum value or None.
+        """
         return Functions.max_value(args)
 
     #

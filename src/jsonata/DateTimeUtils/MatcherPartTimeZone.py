@@ -34,15 +34,33 @@ from src.jsonata.DateTimeUtils.SpecPart import SpecPart
 
 
 class MatcherPartTimeZone(MatcherPart):
+    """
+    Matcher part for parsing time zone offsets from date/time strings.
+    """
+
     _part: "SpecPart"
     _separator: bool
 
     def __init__(self, regex, part, separator):
+        """
+        Initialize a MatcherPartTimeZone with regex, part spec, and separator flag.
+        Args:
+            regex (str): Regex pattern for matching time zone.
+            part (SpecPart): Specification part for the time zone.
+            separator (bool): True if separator is present, False otherwise.
+        """
         super().__init__(regex)
         self._part = part
         self._separator = separator
 
     def parse(self, value: str) -> int:
+        """
+        Parse a time zone offset string into minutes.
+        Args:
+            value (str): The time zone string to parse.
+        Returns:
+            int: Offset in minutes.
+        """
         if self._part.component == "z":
             value = value[3:]
         offset_hours = 0

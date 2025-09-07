@@ -41,6 +41,11 @@ from src.jsonata.Signature.Param import Param
 # Manages signature related functions
 #
 class Signature:
+    """
+    Manages function signature parsing, validation, and argument type checking for Jsonata functions.
+    Parses signature strings, generates regex patterns, and validates arguments against expected types.
+    """
+
     SERIAL_VERSION_UID = -450755246855587271
 
     signature: str

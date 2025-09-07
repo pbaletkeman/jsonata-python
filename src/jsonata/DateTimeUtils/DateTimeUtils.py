@@ -57,6 +57,10 @@ from src.jsonata.Functions.Functions import Functions
 
 
 class DateTimeUtils:
+    """
+    Utility functions for date and time manipulation in Jsonata Python implementation.
+    """
+
     _few = [
         "Zero",
         "One",
@@ -116,10 +120,21 @@ class DateTimeUtils:
 
     @staticmethod
     def number_to_words(value: int, ordinal: bool) -> str:
+        """
+        Convert a number to its word representation.
+        Args:
+            value (int): The number to convert.
+            ordinal (bool): Whether to use ordinal form.
+        Returns:
+            str: Word representation of the number.
+        """
         return DateTimeUtils._lookup(value, False, ordinal)
 
     @staticmethod
     def _lookup(num: int, prev: int, ordinal: bool) -> str:
+        """
+        Helper for number_to_words. Converts a number to words recursively.
+        """
         if num <= 19:
             words = (" and " if prev else "") + (
                 DateTimeUtils._ordinals[int(num)]
@@ -165,6 +180,9 @@ class DateTimeUtils:
 
     @staticmethod
     def _static_initializer():
+        """
+        Initializes word value mappings for number conversion.
+        """
         i = 0
         while i < len(DateTimeUtils._few):
             DateTimeUtils._word_values[DateTimeUtils._few[i].casefold()] = i
@@ -222,6 +240,13 @@ class DateTimeUtils:
 
     @staticmethod
     def words_to_number(text: str) -> int:
+        """
+        Convert a string of words to its numeric value.
+        Args:
+            text (str): The word string to convert.
+        Returns:
+            int: Numeric value.
+        """
         parts = re.split(",\\s|\\sand\\s|[\\s\\-]", text)
         values = [DateTimeUtils._word_values[part] for i, part in enumerate(parts)]
         segs = deque()
@@ -242,6 +267,13 @@ class DateTimeUtils:
     #
     @staticmethod
     def words_to_long(text: str) -> int:
+        """
+        Convert a string of words to its long integer value.
+        Args:
+            text (str): The word string to convert.
+        Returns:
+            int: Long integer value.
+        """
         parts = re.split(",\\s|\\sand\\s|[\\s\\-]", text)
         values = [DateTimeUtils._word_values_long[part] for i, part in enumerate(parts)]
         segs = deque()
@@ -259,6 +291,11 @@ class DateTimeUtils:
 
     @staticmethod
     def _create_roman_values() -> dict[str, int]:
+        """
+        Create mapping of Roman numeral characters to values.
+        Returns:
+            dict[str, int]: Roman numeral value mapping.
+        """
         values = {"M": 1000, "D": 500, "C": 100, "L": 50, "X": 10, "V": 5, "I": 1}
         return values
 
@@ -282,6 +319,13 @@ class DateTimeUtils:
 
     @staticmethod
     def _decimal_to_roman(value: int) -> str:
+        """
+        Convert a decimal integer to Roman numeral string.
+        Args:
+            value (int): The integer to convert.
+        Returns:
+            str: Roman numeral representation.
+        """
         i = 0
         while i < len(DateTimeUtils._roman_numerals):
             numeral = DateTimeUtils._roman_numerals[i]
@@ -294,6 +338,13 @@ class DateTimeUtils:
 
     @staticmethod
     def roman_to_decimal(roman: str) -> int:
+        """
+        Convert a Roman numeral string to decimal integer.
+        Args:
+            roman (str): Roman numeral string.
+        Returns:
+            int: Decimal value.
+        """
         decimal_val = 0
         max_val = 1
         for digit in reversed(roman):
@@ -307,6 +358,14 @@ class DateTimeUtils:
 
     @staticmethod
     def _decimal_to_letters(value: int, a_char: str) -> str:
+        """
+        Convert a decimal integer to alphabetic letters (A-Z).
+        Args:
+            value (int): The integer to convert.
+            a_char (str): Base character ('A' or 'a').
+        Returns:
+            str: Letter representation.
+        """
         letters = []
         a_code = a_char[0]
         while value > 0:
@@ -316,11 +375,27 @@ class DateTimeUtils:
 
     @staticmethod
     def format_integer(value: int, picture: Optional[str]) -> str:
+        """
+        Format an integer according to a picture specification.
+        Args:
+            value (int): The integer to format.
+            picture (Optional[str]): The format picture.
+        Returns:
+            str: Formatted integer string.
+        """
         fmt = DateTimeUtils._analyse_integer_picture(picture)
         return DateTimeUtils._format_integer(value, fmt)
 
     @staticmethod
     def parse_integer(value: Optional[str], picture: Optional[str]) -> Optional[int]:
+        """
+        Parse an integer from a string according to a picture specification.
+        Args:
+            value (Optional[str]): The string to parse.
+            picture (Optional[str]): The format picture.
+        Returns:
+            Optional[int]: Parsed integer or None.
+        """
         format_spec = DateTimeUtils._analyse_integer_picture(picture)
         match_spec = DateTimeUtils._generate_regex_with_component(None, format_spec)
         # //const fullRegex = '^' + matchSpec.regex + '$'
@@ -331,6 +406,11 @@ class DateTimeUtils:
 
     @staticmethod
     def _create_suffix_map() -> dict[str, str]:
+        """
+        Create a mapping for ordinal suffixes.
+        Returns:
+            dict[str, str]: Suffix mapping.
+        """
         suffix = {"1": "st", "2": "nd", "3": "rd"}
         return suffix
 
@@ -338,6 +418,14 @@ class DateTimeUtils:
 
     @staticmethod
     def _format_integer(value: int, fmt: Optional[Format]) -> str:
+        """
+        Format an integer using a Format object.
+        Args:
+            value (int): The integer to format.
+            fmt (Optional[Format]): Format specification.
+        Returns:
+            str: Formatted integer string.
+        """
         formatted_integer = ""
         negative = value < 0
         value = abs(value)
@@ -454,6 +542,13 @@ class DateTimeUtils:
 
     @staticmethod
     def _analyse_integer_picture(picture: Optional[str]) -> Format:
+        """
+        Analyse an integer format picture and return a Format object.
+        Args:
+            picture (Optional[str]): The format picture.
+        Returns:
+            Format: Format specification object.
+        """
         fmt = Format()
         primary_format = None
         format_modifier = None
@@ -538,6 +633,13 @@ class DateTimeUtils:
 
     @staticmethod
     def _get_regular_repeat(separators: Sequence["GroupingSeparator"]) -> int:
+        """
+        Determine if grouping separators repeat regularly.
+        Args:
+            separators (Sequence[GroupingSeparator]): List of separators.
+        Returns:
+            int: Repeat factor or 0 if not regular.
+        """
         if not separators:
             return 0
 
@@ -557,6 +659,11 @@ class DateTimeUtils:
 
     @staticmethod
     def _create_default_presentation_modifiers() -> dict[str, str]:
+        """
+        Create default presentation modifiers for date/time components.
+        Returns:
+            dict[str, str]: Default modifiers mapping.
+        """
         mapping = {
             "Y": "1",
             "M": "1",
@@ -584,6 +691,13 @@ class DateTimeUtils:
 
     @staticmethod
     def _analyse_datetime_picture(picture: str) -> PictureFormat:
+        """
+        Analyse a datetime format picture and return a PictureFormat object.
+        Args:
+            picture (str): The format picture.
+        Returns:
+            PictureFormat: Format specification object.
+        """
         fmt = PictureFormat()
         start = 0
         pos = 0
@@ -688,6 +802,13 @@ class DateTimeUtils:
 
     @staticmethod
     def _parse_width(wm: Optional[str]) -> Optional[int]:
+        """
+        Parse width modifier from string.
+        Args:
+            wm (Optional[str]): Width modifier string.
+        Returns:
+            Optional[int]: Parsed width or None.
+        """
         if wm is None or wm == "*":
             return None
         else:
@@ -724,6 +845,15 @@ class DateTimeUtils:
     def format_datetime(
         millis: int, picture: Optional[str], timezone: Optional[str]
     ) -> str:
+        """
+        Format a datetime value according to a picture and timezone.
+        Args:
+            millis (int): Milliseconds since epoch.
+            picture (Optional[str]): Format picture.
+            timezone (Optional[str]): Timezone offset.
+        Returns:
+            str: Formatted datetime string.
+        """
         offset_hours = 0
         offset_minutes = 0
 
@@ -763,6 +893,16 @@ class DateTimeUtils:
         offset_hours: int,
         offset_minutes: int,
     ) -> str:
+        """
+        Format a single component of a datetime value.
+        Args:
+            date (datetime.datetime): The datetime object.
+            marker_spec (SpecPart): Specification for the component.
+            offset_hours (int): Timezone offset hours.
+            offset_minutes (int): Timezone offset minutes.
+        Returns:
+            str: Formatted component string.
+        """
         component_value = DateTimeUtils._get_datetime_fragment(
             date, marker_spec.component
         )
@@ -853,6 +993,14 @@ class DateTimeUtils:
 
     @staticmethod
     def _get_datetime_fragment(date: datetime.datetime, component: str) -> str:
+        """
+        Extract a fragment/component from a datetime object.
+        Args:
+            date (datetime.datetime): The datetime object.
+            component (str): Component specifier.
+        Returns:
+            str: Extracted value as string.
+        """
         component_value = ""
         if component == "Y":  # year
             component_value = str(date.year)
@@ -902,6 +1050,13 @@ class DateTimeUtils:
 
     @staticmethod
     def week_in_month(dt: datetime.datetime) -> int:
+        """
+        Calculate the week number in the month for a given date.
+        Args:
+            dt (datetime.datetime): The date.
+        Returns:
+            int: Week number in month.
+        """
         this_month = YearMonth(dt.year, dt.month)
         start_of_week1 = DateTimeUtils.start_of_first_week(this_month)
         today = datetime.date(this_month.year, this_month.month, dt.day)
@@ -921,6 +1076,13 @@ class DateTimeUtils:
 
     @staticmethod
     def iso_week_numbering_year(dt: datetime.datetime) -> int:
+        """
+        Get the ISO week numbering year for a given date.
+        Args:
+            dt (datetime.datetime): The date.
+        Returns:
+            int: ISO week numbering year.
+        """
         this_year = YearMonth(dt.year, 1)
         start_of_iso_year = DateTimeUtils.start_of_first_week(this_year)
         end_of_iso_year = DateTimeUtils.start_of_first_week(this_year.next_year())
@@ -934,6 +1096,13 @@ class DateTimeUtils:
 
     @staticmethod
     def iso_week_numbering_month(dt: datetime.datetime) -> int:
+        """
+        Get the ISO week numbering month for a given date.
+        Args:
+            dt (datetime.datetime): The date.
+        Returns:
+            int: ISO week numbering month.
+        """
         this_month = YearMonth(dt.year, dt.month)
         start_of_iso_month = DateTimeUtils.start_of_first_week(this_month)
         next_month = this_month.next_month()
@@ -948,6 +1117,13 @@ class DateTimeUtils:
 
     @staticmethod
     def start_of_first_week(year_month: "YearMonth") -> datetime.date:
+        """
+        Calculate the start date of the first ISO week for a year/month.
+        Args:
+            year_month (YearMonth): YearMonth object.
+        Returns:
+            datetime.date: Start date of first week.
+        """
         # ISO 8601 defines the first week of the year to be the week that contains the first Thursday
         # XPath F&O extends this same definition for the first week of a month
         # the week starts on a Monday - calculate the millis for the start of the first week
@@ -963,10 +1139,26 @@ class DateTimeUtils:
 
     @staticmethod
     def delta_weeks(start: datetime.date, end: datetime.date) -> int:
+        """
+        Calculate the number of weeks between two dates.
+        Args:
+            start (datetime.date): Start date.
+            end (datetime.date): End date.
+        Returns:
+            int: Number of weeks.
+        """
         return int((end - start).total_seconds() / (7 * 24 * 60 * 60) + 1)
 
     @staticmethod
     def parse_datetime(timestamp: Optional[str], picture: str) -> Optional[int]:
+        """
+        Parse a datetime string according to a picture specification.
+        Args:
+            timestamp (Optional[str]): The datetime string.
+            picture (str): Format picture.
+        Returns:
+            Optional[int]: Milliseconds since epoch or None.
+        """
         format_spec = DateTimeUtils._analyse_datetime_picture(picture)
         match_spec = DateTimeUtils._generate_regex(format_spec)
         full_regex = "^"
@@ -1085,10 +1277,25 @@ class DateTimeUtils:
 
     @staticmethod
     def _is_type(type_code: int, mask: int) -> bool:
+        """
+        Check if a mask matches a type code.
+        Args:
+            type_code (int): Type code.
+            mask (int): Mask value.
+        Returns:
+            bool: True if matches, else False.
+        """
         return ((~type_code & mask) == 0) and (type_code & mask) != 0
 
     @staticmethod
     def _generate_regex(format_spec: PictureFormat) -> "PictureMatcher":
+        """
+        Generate a regex matcher for a PictureFormat specification.
+        Args:
+            format_spec (PictureFormat): Format specification.
+        Returns:
+            PictureMatcher: Matcher object.
+        """
         matcher = PictureMatcher()
         for part in format_spec.parts:
             res = None
@@ -1152,6 +1359,14 @@ class DateTimeUtils:
     def _generate_regex_with_component(
         component: Optional[str], format_spec: Optional[Format]
     ) -> MatcherPart:
+        """
+        Generate a regex matcher for a component and format specification.
+        Args:
+            component (Optional[str]): Component specifier.
+            format_spec (Optional[Format]): Format specification.
+        Returns:
+            MatcherPart: Matcher object.
+        """
         is_upper = format_spec.case_type == TCase.UPPER
         if format_spec.primary == Formats.LETTERS:
             regex = "[A-Z]+" if is_upper else "[a-z]+"
@@ -1190,6 +1405,14 @@ class DateTimeUtils:
 
     @staticmethod
     def letters_to_decimal(letters: str, a_char: str) -> int:
+        """
+        Convert a string of letters to its decimal value.
+        Args:
+            letters (str): Letter string.
+            a_char (str): Base character ('A' or 'a').
+        Returns:
+            int: Decimal value.
+        """
         decimal = 0
         chars = list(letters)
         i = 0

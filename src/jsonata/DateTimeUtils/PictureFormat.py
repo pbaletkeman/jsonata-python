@@ -33,14 +33,29 @@ from src.jsonata.DateTimeUtils.SpecPart import SpecPart
 
 
 class PictureFormat:
+    """
+    Represents a parsed picture format for date/time formatting in Jsonata.
+    Holds a list of SpecPart objects describing the format.
+    """
+
     type: str
     parts: list["SpecPart"]
 
     def __init__(self):
+        """
+        Initialize a PictureFormat object with default type and empty parts list.
+        """
         self.type = type
         self.parts = []
 
     def add_literal(self, picture: str, start: int, end: int) -> None:
+        """
+        Add a literal part to the picture format.
+        Args:
+            picture (str): The picture format string.
+            start (int): Start index of the literal.
+            end (int): End index of the literal.
+        """
         if end > start:
             literal = picture[start:end]
             if literal == "]]":

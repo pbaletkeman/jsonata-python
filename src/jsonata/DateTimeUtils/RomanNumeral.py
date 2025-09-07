@@ -31,15 +31,35 @@
 
 
 class RomanNumeral:
+    """
+    Represents a Roman numeral with its integer value and letter representation.
+    """
+
     _value: int
     _letters: str
 
     def __init__(self, value, letters):
+        """
+        Initialize a RomanNumeral with value and letters.
+        Args:
+            value (int): The integer value of the Roman numeral.
+            letters (str): The Roman numeral letters.
+        """
         self._value = value
         self._letters = letters
 
     def get_value(self) -> int:
+        """
+        Get the integer value of the Roman numeral.
+        Returns:
+            int: The value.
+        """
         return self._value
 
     def get_letters(self) -> str:
+        """
+        Get the letter representation of the Roman numeral.
+        Returns:
+            str: The Roman numeral letters.
+        """
         return self._letters

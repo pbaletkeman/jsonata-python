@@ -33,6 +33,10 @@ from enum import Enum
 
 
 class TCase(Enum):
+    """
+    Enumeration of case types for formatting strings in Jsonata (upper, lower, title).
+    """
+
     UPPER = "upper"
     LOWER = "lower"
     TITLE = "title"
