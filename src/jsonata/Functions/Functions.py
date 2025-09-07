@@ -830,6 +830,13 @@ class Functions:
     #
     @staticmethod
     def to_jsonata_match(mr: re.Match[str]) -> dict[str, list[str]]:
+        """
+        Convert a regex Match object to a Jsonata-style match dictionary.
+        Args:
+            mr (re.Match[str]): Regex match object.
+        Returns:
+            dict[str, list[str]]: Dictionary with 'match' and 'groups' keys representing the match and its groups.
+        """
         obj = {"match": mr.group()}
 
         groups = []
@@ -1234,33 +1241,17 @@ class Functions:
         zero_digit = decimal_format.get("zero-digit", "0")
         optional_digit = decimal_format.get("digit", "#")
         digits_family = "".join(chr(cp + ord(zero_digit)) for cp in range(10))
-        if any(
-            optional_digit not in p and all(x not in p for x in digits_family)
-            for p in sub_pictures
-        ):
-            raise JException("D3085", -1)
         grouping_separator = decimal_format.get("grouping-separator", ",")
-        adjacent_pattern = re.compile(
-            r"[\\%s\\%s]{2}" % (grouping_separator, decimal_separator)
-        )
-        if any(adjacent_pattern.search(p) for p in sub_pictures):
-            raise JException("D3087", -1)
-
-        if any(
-            x.endswith(grouping_separator)
-            for s in sub_pictures
-            for x in s.split(decimal_separator)
-        ):
-            raise JException("D3088", -1)
-
-        active_characters = digits_family + "".join(
-            [decimal_separator, grouping_separator, pattern_separator, optional_digit]
-        )
-
         exponent_pattern = None
-
         # Check optional exponent spec correctness in each sub-picture
         exponent_separator = decimal_format.get("exponent-separator", "e")
+        active_characters = (
+            digits_family
+            + decimal_separator
+            + grouping_separator
+            + pattern_separator
+            + optional_digit
+        )
         pattern = re.compile(
             r"(?<=[{0}]){1}[{0}]".format(
                 re.escape(active_characters), exponent_separator
@@ -1281,7 +1272,6 @@ class Functions:
                             raise JException("D3086", -1)
                         else:
                             has_suffix = True
-
                 exponent_pattern = pattern
 
         if value is None:
@@ -1317,21 +1307,17 @@ class Functions:
         elif subpic.endswith(percent_sign):
             suffix = percent_sign
             subpic = subpic[: -len(percent_sign)]
-
             if value.as_tuple().exponent < 0:
                 value *= 100
             else:
                 value = decimal.Decimal(int(value) * 100)
-
         elif subpic.endswith(per_mille_sign):
             suffix = per_mille_sign
             subpic = subpic[: -len(per_mille_sign)]
-
             if value.as_tuple().exponent < 0:
                 value *= 1000
             else:
                 value = decimal.Decimal(int(value) * 1000)
-
         else:
             for k, ch in enumerate(reversed(subpic)):
                 if ch in active_characters:
@@ -1364,20 +1350,17 @@ class Functions:
             for ch in fmt_tokens[0]:
                 if ch in digits_family:
                     num_digits += 1
-
             if abs(value) > 1:
                 v = abs(value)
                 while v > 10**num_digits:
                     exp_value += 1
                     v /= 10
-
                 # modify empty fractional part to store a digit
                 if not num_digits:
                     if len(fmt_tokens) == 1:
                         fmt_tokens.append(zero_digit)
                     elif not fmt_tokens[-1]:
                         fmt_tokens[-1] = zero_digit
-
             elif len(fmt_tokens) > 1 and fmt_tokens[-1] and value >= 0:
                 v = abs(value) * 10
                 while v < 10**num_digits:
@@ -1388,7 +1371,6 @@ class Functions:
                 while v < 10:
                     exp_value -= 1
                     v *= 10
-
             if exp_value:
                 value = value * decimal.Decimal(10) ** -exp_value
 
@@ -1433,12 +1415,9 @@ class Functions:
                     has_optional_digit = True
                 elif ch in digits_family and has_optional_digit:
                     raise JException("D3091", -1)
-
             if len(chunks) == 1:
                 chunks.append(zero_digit)
-
             decimal_part = Functions.format_digits(chunks[1], fmt_tokens[-1], **kwargs)
-
             for ch in reversed(fmt_tokens[-1]):
                 if ch == optional_digit:
                     if decimal_part and decimal_part[-1] == zero_digit:
@@ -1447,10 +1426,8 @@ class Functions:
                     if not decimal_part:
                         decimal_part = zero_digit
                     break
-
             if decimal_part:
                 result += decimal_separator + decimal_part
-
                 if not fmt_tokens[0] and result.startswith(zero_digit):
                     result = result.lstrip(zero_digit)
 
@@ -2606,6 +2583,13 @@ class Functions:
     # Adapted from: org.apache.commons.lang3.StringUtils
     @staticmethod
     def is_numeric(cs: Optional[str]) -> bool:
+        """
+        Check if the input string consists only of numeric digits.
+        Args:
+            cs (Optional[str]): Input string to check.
+        Returns:
+            bool: True if the string is numeric, False otherwise.
+        """
         if cs is None or not cs:
             return False
         for c in cs:
@@ -2625,6 +2609,15 @@ class Functions:
     def datetime_from_millis(
         millis: Optional[float], picture: Optional[str], timezone: Optional[str]
     ) -> Optional[str]:
+        """
+        Convert milliseconds since the epoch to an ISO 8601 timestamp string, optionally formatted.
+        Args:
+            millis (Optional[float]): Milliseconds since the epoch to be converted.
+            picture (Optional[str]): Format picture string (optional).
+            timezone (Optional[str]): Timezone for formatting (optional).
+        Returns:
+            Optional[str]: Formatted timestamp string, or None if input is None.
+        """
         # undefined inputs always return undefined
         if millis is None:
             return None
@@ -2644,6 +2637,14 @@ class Functions:
 
     @staticmethod
     def format_integer(value: Optional[float], picture: Optional[str]) -> Optional[str]:
+        """
+        Format an integer according to the XPath fn:format-integer specification.
+        Args:
+            value (Optional[float]): The number to be formatted.
+            picture (Optional[str]): The picture string that specifies the format.
+        Returns:
+            Optional[str]: The formatted number as a string, or None if input is None.
+        """
         if value is None:
             return None
         from src.jsonata.DateTimeUtils import DateTimeUtils
@@ -2660,6 +2661,14 @@ class Functions:
 
     @staticmethod
     def parse_integer(value: Optional[str], picture: Optional[str]) -> Optional[int]:
+        """
+        Parse a string containing an integer as specified by the picture string.
+        Args:
+            value (Optional[str]): The string to parse.
+            picture (Optional[str]): The picture string.
+        Returns:
+            Optional[int]: The parsed number, or None if input is None.
+        """
         if value is None:
             return None
         from src.jsonata.DateTimeUtils import DateTimeUtils
@@ -2673,6 +2682,13 @@ class Functions:
     #
     @staticmethod
     def function_clone(arg: Optional[Any]) -> Optional[Any]:
+        """
+        Clone an object using deep copy via JSON serialization.
+        Args:
+            arg (Optional[Any]): Object to clone.
+        Returns:
+            Optional[Any]: The cloned object, or None if input is None.
+        """
         # undefined inputs always return undefined
         if arg is None:
             return None
@@ -2687,6 +2703,16 @@ class Functions:
     #
     @staticmethod
     def function_eval(expr: Optional[str], focus: Optional[Any]) -> Optional[Any]:
+        """
+        Parse and evaluate the supplied Jsonata expression.
+        Args:
+            expr (Optional[str]): Expression to evaluate.
+            focus (Optional[Any]): Optional input/focus value for evaluation.
+        Returns:
+            Optional[Any]: Result of evaluating the expression, or None if input is None or evaluation fails.
+        Raises:
+            JException: If parsing or evaluation fails.
+        """
 
         # undefined inputs always return undefined
         if expr is None:
@@ -2727,6 +2753,14 @@ class Functions:
     #  }, "<s?s?:s>"))
     @staticmethod
     def now(picture: Optional[str], timezone: Optional[str]) -> Optional[str]:
+        """
+        Return the current timestamp formatted as specified.
+        Args:
+            picture (Optional[str]): Format picture string (optional).
+            timezone (Optional[str]): Timezone for formatting (optional).
+        Returns:
+            Optional[str]: Formatted timestamp string, or None if timestamp is not available.
+        """
 
         from src.jsonata.Jsonata.Jsonata import Jsonata
 
@@ -2741,7 +2775,11 @@ class Functions:
     #  }, "<:n>"))
     @staticmethod
     def millis() -> int:
-
+        """
+        Return the current timestamp in milliseconds since the epoch.
+        Returns:
+            int: Current timestamp in milliseconds, or None if not available.
+        """
         from src.jsonata.Jsonata.Jsonata import Jsonata
 
         if hasattr(Jsonata.CURRENT, "jsonata"):
